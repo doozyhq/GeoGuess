@@ -242,7 +242,7 @@ export default {
                     state.players = Object.values(
                         snapshot.child('player').val()
                     ).map((p) => p.name);
-                debugger;
+
                 if (
                     state.currentComponent === 'playerName' &&
                     !state.isHost &&
@@ -297,7 +297,7 @@ export default {
             }
         },
 
-        setPlayerName({ commit, state }, playerName) {
+        setPlayerName({ commit }, playerName) {
             if (playerName === '') {
                 commit(MutationTypes.SETTINGS_SET_PLAYER_NAME, randomAnimal);
             } else {

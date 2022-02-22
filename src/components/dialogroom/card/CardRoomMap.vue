@@ -95,7 +95,7 @@ export default {
             // Items have already been requested
             if (!val) {
                 this.entries = [];
-            };
+            }
 
             this.isLoading = true;
 
