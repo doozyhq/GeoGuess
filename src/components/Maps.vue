@@ -343,7 +343,6 @@ export default {
                             );
                             i++;
                         });
-                        this.$refs.map.fitBounds();
                         this.game.rounds.push({
                             position: {
                                 ...this.randomLatLng.toJSON(),
@@ -352,6 +351,7 @@ export default {
                             players,
                         });
                         this.$refs.map.putMarker(this.randomLatLng, true);
+                        this.$refs.map.fitBounds();
 
                         this.printMapFull = true;
                         // Remove guess node every time the round is done

@@ -156,6 +156,7 @@ export default {
                 }
             }
 
+
             this.map.fitBounds(bounds);
         },
     },
