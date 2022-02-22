@@ -116,10 +116,7 @@ import {
 } from '../utils';
 
 import { AREA_MODE, GAME_MODE, SCORE_MODE } from '../constants';
-
 import { mapActions, mapGetters } from 'vuex';
-
-import ConfirmExitMixin from '@/mixins/ConfirmExitMixin';
 
 export default {
     components: {
@@ -127,7 +124,7 @@ export default {
         Maps,
         DialogMessage,
     },
-    mixins: [ConfirmExitMixin],
+    mixins: [],
     props: {
         roomName: {
             default: null,
@@ -223,6 +220,7 @@ export default {
             points: 0,
             pointsHeader: 0,
             round: 0,
+            streetView: 0,
             timeLimitation: this.time,
             mode: this.modeSelected,
             timeAttack: this.timeAttackSelected,
@@ -242,6 +240,8 @@ export default {
             panorama: null,
             players: 0,
             playerId: null,
+            isHost: false,
+            playerName: "",
 
             difficultyData: this.difficulty,
             bbox: this.bboxObj,
@@ -275,6 +275,10 @@ export default {
             if (this.playerId && snapshot.child('player').child(this.playerId)) {
                 this.isHost = snapshot.child('player').child(this.playerId).val().isHost || false;
                 this.playerName = snapshot.child('player').child(this.playerId).val().name || false;
+
+                snapshot.ref.child('player').child(this.playerId).child('isOnline').onDisconnect().set(false).then(() => {
+                    snapshot.ref.child('player').child(this.playerId).child('isOnline').set(true).catch(console.error);
+                }).catch(console.error);
             } else {
                 this.isHost = false;
                 this.playerName = null;
@@ -287,15 +291,13 @@ export default {
                 if (!snapshot.child("round").exists()) {
                     this.round = snapshot.child("round").val() || 1;
                     snapshot.ref.child("round").set(1);
-                    // this.loadStreetView();
                     isNewRound = true;
                 } else {
                     isNewRound = this.round !== snapshot.child("round").val();
                     this.round = snapshot.child("round").val();
                 }
 
-
-                this.players = snapshot.child("player").numChildren();
+                this.players = Object.values(snapshot.child("player").val()).filter(t => t.isOnline).length;
                 // Put the player into the current round node if the player is not put yet
                 if (
                     !snapshot
@@ -309,7 +311,7 @@ export default {
                 }
 
                 // Other players load the streetview the first player loaded earlier
-                if (snapshot.child("streetView").exists() && isNewRound) {
+                if (snapshot.child(`streetView/round${this.round}`).exists() && this.round !== this.streetView) {
                     this.randomLat = snapshot
                         .child(
                             'streetView/round' +
@@ -349,16 +351,9 @@ export default {
                         this.randomLat,
                         this.randomLng
                     );
+                    this.$refs.mapContainer.startNextRound();
                     this.resetLocation();
-                }
-
-                // Enable guess button when every players are put into the current round's node
-
-                if (
-                    snapshot.child('round' + this.round).numChildren() ===
-                        snapshot.child('size').val() &&
-                    !this.isReady
-                ) {
+                    this.streetView = this.round;
                     // Close the dialog when everyone is ready
                     this.dialogMessage = false;
                     this.dialogText = '';
@@ -377,6 +372,7 @@ export default {
                             this.hasTimerStarted = true;
                         }
                     }
+                    this.resetLocation();
                 }
 
                 // Delete the room when everyone finished the game
@@ -412,7 +408,6 @@ export default {
                     this.onUserEventPanoramaMouse
                 );
         }
-        window.removeEventListener('beforeunload', this.beforeUnload);
         if (this.room) {
             // Remove the room when the player refreshes the window
             // Remove the room when the player pressed the back button on browser
@@ -769,6 +764,7 @@ export default {
             }
             this.$refs.mapContainer.startNextRound();
         },
+        
         exitGame() {
             // Disable the listener and force the players to exit the game
             this.dialogTitle = this.$t('StreetView.redirectToHomePage');

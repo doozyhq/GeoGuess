@@ -263,7 +263,7 @@ export default {
             this.room.on('value', (snapshot) => {
                 // Check if the room is already removed
                 if (snapshot.hasChild('active')) {
-                    size = snapshot.child('player').numChildren();
+                    size = Object.values(snapshot.child('player').val()).filter(p => p.isOnline).length;
                     // if (size === 1) {
                     //     this.room.onDisconnect().remove();
                     // } else {
@@ -350,8 +350,8 @@ export default {
                             },
                             players,
                         });
-                        this.$refs.map.putMarker(this.randomLatLng, true);
                         this.$refs.map.fitBounds();
+                        this.$refs.map.putMarker(this.randomLatLng, true);
 
                         this.printMapFull = true;
                         // Remove guess node every time the round is done
@@ -391,10 +391,10 @@ export default {
                         }
                     }
 
-                    // Allow other players to move on to the next round when the next street view is set
+                    // Allow other players to move on to the next round when the next street view is set=
                     if (
                         snapshot.child('streetView').numChildren() ==
-                        this.round + 1
+                        this.round
                     ) {
                         this.isNextStreetViewReady = true;
                     }
