@@ -237,6 +237,7 @@ export default {
     },
     computed: {
         isNextButtonEnabled() {
+            debugger;
             if (this.isHost || !this.room) {
                 return true;
             } else {
@@ -263,7 +264,7 @@ export default {
             this.room.on('value', (snapshot) => {
                 // Check if the room is already removed
                 if (snapshot.hasChild('active')) {
-                    // size = snapshot.child('size').val();
+                    size = snapshot.child('player').numChildren();
                     // if (size === 1) {
                     //     this.room.onDisconnect().remove();
                     // } else {
@@ -346,7 +347,7 @@ export default {
                         this.$refs.map.fitBounds();
                         this.game.rounds.push({
                             position: {
-                                ...this.randomLatLng,
+                                ...this.randomLatLng.toJSON(),
                                 area: this.area,
                             },
                             players,

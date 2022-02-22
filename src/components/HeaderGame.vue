@@ -8,15 +8,6 @@
             <div v-else>
                 <span id="countdown-text">{{ timerText }}</span>
             </div>
-            <div
-                v-if="roomName && !streamerMode"
-                class="round-score-container room-name"
-            >
-                <span class="sub-text">{{ $t('HeaderGame.room') }} : </span>
-                <span class="main-text">
-                    {{ roomName }}
-                </span>
-            </div>
             <div class="flex-grow-1" />
             <div class="round-score-container">
                 <span class="sub-text">{{ $t('HeaderGame.round') }}: </span>

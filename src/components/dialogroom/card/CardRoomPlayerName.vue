@@ -66,7 +66,6 @@
                 dark
                 depressed
                 color="#43B581"
-                :disabled="players.length < 2"
                 @click="startGame"
             >
                 {{ $t('next') }}

@@ -32,7 +32,6 @@
                     </v-tooltip>
                     <Maps
                         ref="mapContainer"
-                        v-if="playerId != null"
                         :random-lat-lng="randomLatLng"
                         :random-feature-properties="randomFeatureProperties"
                         :room-name="roomName"
@@ -143,14 +142,10 @@ export default {
         //     default: null,
         //     type: Number,
         // },
-        isHost: {
-            default: false,
-            type: Boolean,
-        },
-        playerName: {
-            default: null,
-            type: String,
-        },
+        // isHost: {
+        //     default: false,
+        //     type: Boolean,
+        // },
         // playerId: {
         //     type: String,
         //     default: null
@@ -227,7 +222,7 @@ export default {
             scoreHeader: 0,
             points: 0,
             pointsHeader: 0,
-            round: 1,
+            round: 0,
             timeLimitation: this.time,
             mode: this.modeSelected,
             timeAttack: this.timeAttackSelected,
@@ -252,6 +247,7 @@ export default {
             bbox: this.bboxObj,
             isVisibleCountdownAlert: false,
             timeCountdown: 0,
+            isLoading: true
         };
     },
     computed: {
@@ -271,131 +267,137 @@ export default {
             this.$refs.streetView
         );
 
-        if (this.isHost || !this.multiplayer) {
-            debugger;
-            this.loadStreetView();
-        }
+        this.room = firebase.database().ref(this.roomName);
+        this.room.child('active').set(true);
+        this.room.on('value', async (snapshot) => {
+            this.playerId = firebase.auth().currentUser && firebase.auth().currentUser.uid || null;
 
-        if (!this.multiplayer) {
-            this.$refs.mapContainer.startNextRound();
-
-            if (this.timeLimitation != 0) {
-                if (!this.hasTimerStarted) {
-                    this.initTimer(this.timeLimitation);
-                    this.hasTimerStarted = true;
-                }
+            if (this.playerId && snapshot.child('player').child(this.playerId)) {
+                this.isHost = snapshot.child('player').child(this.playerId).val().isHost || false;
+                this.playerName = snapshot.child('player').child(this.playerId).val().name || false;
+            } else {
+                this.isHost = false;
+                this.playerName = null;
             }
-            this.players = 1;
-        } else {
-            // // Set a room name if it's null to detect when the user refresh the page
-            // if (!this.roomName) {
-            //     this.exitGame();
-            // }
-            this.room = firebase.database().ref(this.roomName);
-            this.room.child('active').set(true);
-            this.room.on('value', (snapshot) => {
-                this.playerId = firebase.auth().currentUser && firebase.auth().currentUser.uid || null;
-                // Check if the room is already removed
-                if (snapshot.hasChild('active')) {
+            this.isLoading = false;
 
-                    this.players = snapshot.child("player").numChildren();
-                    // Put the player into the current round node if the player is not put yet
-                    if (
-                        !snapshot
-                            .child('round' + this.round)
-                            .hasChild(this.playerId)
-                    ) {
-                        this.room
-                            .child('round' + this.round)
-                            .child(this.playerId)
-                            .set(0);
-
-                        // Other players load the streetview the first player loaded earlier
-                        if (!this.isHost) {
-                            this.randomLat = snapshot
-                                .child(
-                                    'streetView/round' +
-                                        this.round +
-                                        '/latitude'
-                                )
-                                .val();
-                            this.randomLng = snapshot
-                                .child(
-                                    'streetView/round' +
-                                        this.round +
-                                        '/longitude'
-                                )
-                                .val();
-                            this.randomLatLng = new google.maps.LatLng(
-                                this.randomLat,
-                                this.randomLng
-                            );
-                            this.area = snapshot
-                                .child(
-                                    'streetView/round' + this.round + '/area'
-                                )
-                                .val();
-                            this.isVisibleDialog = snapshot
-                                .child(
-                                    'streetView/round' + this.round + '/warning'
-                                )
-                                .val();
-                            this.randomFeatureProperties = snapshot
-                                .child(
-                                    'streetView/round' +
-                                        this.round +
-                                        '/roundInfo'
-                                )
-                                .val();
-                            this.randomLatLng = new google.maps.LatLng(
-                                this.randomLat,
-                                this.randomLng
-                            );
-                            this.resetLocation();
-                        }
-                    }
-
-                    // Enable guess button when every players are put into the current round's node
-                    if (
-                        snapshot.child('round' + this.round).numChildren() ===
-                            snapshot.child('size').val() &&
-                        !this.isReady
-                    ) {
-                        // Close the dialog when everyone is ready
-                        this.dialogMessage = false;
-                        this.dialogText = '';
-
-                        this.isReady = true;
-                        this.$refs.mapContainer.startNextRound();
-
-                        // Countdown timer starts
-                        this.timeLimitation = snapshot
-                            .child('timeLimitation')
-                            .val();
-
-                        if (this.timeLimitation != 0) {
-                            if (!this.hasTimerStarted) {
-                                this.initTimer(this.timeLimitation);
-                                this.hasTimerStarted = true;
-                            }
-                        }
-                    }
-
-                    // Delete the room when everyone finished the game
-                    if (
-                        snapshot.child('isGameDone').numChildren() ==
-                        snapshot.child('size').val()
-                    ) {
-                        // this.room.child('active').remove();
-                        // this.room.off();
-                        // this.room.remove();
-                    }
+            // Check if the room is already removed
+            if (snapshot.hasChild('active')) {
+                let isNewRound = false;
+                if (!snapshot.child("round").exists()) {
+                    this.round = snapshot.child("round").val() || 1;
+                    snapshot.ref.child("round").set(1);
+                    // this.loadStreetView();
+                    isNewRound = true;
                 } else {
-                    // Force the players to exit the game when 'Active' is removed
-                    this.exitGame();
+                    isNewRound = this.round !== snapshot.child("round").val();
+                    this.round = snapshot.child("round").val();
                 }
-            });
-        }
+
+
+                this.players = snapshot.child("player").numChildren();
+                // Put the player into the current round node if the player is not put yet
+                if (
+                    !snapshot
+                        .child('round' + this.round)
+                        .hasChild(this.playerId)
+                ) {
+                    await this.room
+                        .child('round' + this.round)
+                        .child(this.playerId)
+                        .set(0);
+                }
+
+                // Other players load the streetview the first player loaded earlier
+                if (snapshot.child("streetView").exists() && isNewRound) {
+                    this.randomLat = snapshot
+                        .child(
+                            'streetView/round' +
+                                this.round +
+                                '/latitude'
+                        )
+                        .val();
+                    this.randomLng = snapshot
+                        .child(
+                            'streetView/round' +
+                                this.round +
+                                '/longitude'
+                        )
+                        .val();
+                    this.randomLatLng = new google.maps.LatLng(
+                        this.randomLat,
+                        this.randomLng
+                    );
+                    this.area = snapshot
+                        .child(
+                            'streetView/round' + this.round + '/area'
+                        )
+                        .val();
+                    this.isVisibleDialog = snapshot
+                        .child(
+                            'streetView/round' + this.round + '/warning'
+                        )
+                        .val();
+                    this.randomFeatureProperties = snapshot
+                        .child(
+                            'streetView/round' +
+                                this.round +
+                                '/roundInfo'
+                        )
+                        .val();
+                    this.randomLatLng = new google.maps.LatLng(
+                        this.randomLat,
+                        this.randomLng
+                    );
+                    this.resetLocation();
+                }
+
+                // Enable guess button when every players are put into the current round's node
+
+                if (
+                    snapshot.child('round' + this.round).numChildren() ===
+                        snapshot.child('size').val() &&
+                    !this.isReady
+                ) {
+                    // Close the dialog when everyone is ready
+                    this.dialogMessage = false;
+                    this.dialogText = '';
+
+                    this.isReady = true;
+                    this.$refs.mapContainer.startNextRound();
+
+                    // Countdown timer starts
+                    this.timeLimitation = snapshot
+                        .child('timeLimitation')
+                        .val();
+
+                    if (this.timeLimitation != 0) {
+                        if (!this.hasTimerStarted) {
+                            this.initTimer(this.timeLimitation);
+                            this.hasTimerStarted = true;
+                        }
+                    }
+                }
+
+                // Delete the room when everyone finished the game
+                if (
+                    snapshot.child('isGameDone').numChildren() ==
+                    snapshot.child('size').val()
+                ) {
+                    // this.resetLocation()
+                    // this.room.child('active').remove();
+                    // this.room.off();
+                    // this.room.remove();
+                }
+
+                if (this.isHost && !snapshot.child("streetView").child('round' + this.round).exists() && isNewRound) {
+                    this.loadStreetView();
+                } 
+            } else {
+                // Force the players to exit the game when 'Active' is removed
+                // this.exitGame();
+            }
+        });
     },
     beforeDestroy() {
         if (document.querySelector('.widget-scene')) {
@@ -716,18 +718,16 @@ export default {
             this.score += distance;
             this.points += points;
 
-            if (this.multiplayer) {
-                this.room
-                    .child(`finalScore/${this.playerId}`)
-                    .set(this.score);
-                this.room
-                    .child(`finalPoints/${this.playerId}`)
-                    .set(this.points);
+            this.room
+                .child(`finalScore/${this.playerId}`)
+                .set(this.score);
+            this.room
+                .child(`finalPoints/${this.playerId}`)
+                .set(this.points);
 
-                // Wait for other players to guess locations
-                this.dialogTitle = this.$t('StreetView.waitForOtherPlayers');
-                this.dialogMessage = true;
-            }
+            // Wait for other players to guess locations
+            this.dialogTitle = this.$t('StreetView.waitForOtherPlayers');
+            this.dialogMessage = true;
         },
         showResult() {
             this.scoreHeader = this.score; // Update the score on header after every players guess locations
@@ -738,7 +738,7 @@ export default {
             this.overlay = true;
             this.$refs.header.stopTimer();
         },
-        goToNextRound(playAgain = false) {
+       async goToNextRound(playAgain = false) {
             if (playAgain) {
                 this.round = 0;
                 this.scoreHeader = 0;
@@ -756,19 +756,11 @@ export default {
             this.isVisibleDialog = false;
             this.randomFeatureProperties = null;
 
-            if (this.multiplayer) {
-                this.dialogMessage = true; // Show the dialog while waiting for other players
-                this.isReady = false; // Turn off the flag so the click event can be added in the next round
-            }
+            this.dialogMessage = true; // Show the dialog while waiting for other players
+            this.isReady = false; // Turn off the flag so the click event can be added in the next round
 
-            // Update the round
-            this.round += 1;
-
-            if (this.isHost || !this.multiplayer) {
-                this.loadStreetView();
-                if (!this.multiplayer && this.timeLimitation != 0) {
-                    this.initTimer(this.timeLimitation);
-                }
+            if (this.isHost) {
+                await this.room.ref.child("round").set(this.round + 1);
             } else {
                 // Trigger listener and load the next streetview
                 this.room
@@ -783,26 +775,16 @@ export default {
             this.dialogText = this.$t('StreetView.exitGame');
             this.dialogMessage = true;
             this.canExit = true;
-            // if (this.room) {
-            //     this.room.off();
-            //     this.room.remove();
-            //     this.$router.push('/history');
-            // } else {
-            //     this.$router.push('/');
-            // }
         },
         finishGame() {
             this.canExit = true;
-            if (!this.multiplayer) {
-                this.$router.push('/history');
-            } else {
-                // Open the dialog while waiting for other players to finsih the game
-                this.dialogTitle = this.$t(
-                    'StreetView.waitForOtherPlayersToFinish'
-                );
-                this.dialogText = '';
-                this.dialogMessage = true;
-            }
+            // Open the dialog while waiting for other players to finsih the game
+            this.dialogTitle = this.$t(
+                'StreetView.waitForOtherPlayersToFinish'
+            );
+            this.dialogText = '';
+            this.dialogMessage = true;
+
         },
         onUserEventPanoramaKey(e) {
             if (
