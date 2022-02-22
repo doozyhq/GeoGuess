@@ -136,7 +136,7 @@
     },
     "CardRoomPlayerName": {
         "title": "Room:",
-        "input": "Type a player name.",
+        "input": "What's your name?",
         "anonymousPlayerName": "Anonymous 🕵",
         "players": "1 player | {count} players"
     },

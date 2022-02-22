@@ -61,7 +61,7 @@
                 {{ $t('cancel') }}
             </v-btn>
             <v-btn
-                v-if="playerNumber === 1"
+                v-if="isHost"
                 id="btnStart"
                 dark
                 depressed
@@ -82,11 +82,11 @@ export default {
     mixins: [CardRoomMixin],
     computed: {
         ...mapState('settingsStore', [
-            'playerNumber',
             'roomName',
             'players',
             'name',
             'invalidName',
+            'isHost'
         ]),
         ...mapState({
             streamerMode: (state) => state.homeStore.streamerMode,

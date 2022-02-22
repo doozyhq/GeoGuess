@@ -23,6 +23,9 @@
 </template>
 
 <script>
+import firebase from "firebase/app";
+import "firebase/auth";
+
 export default {
     name: 'App',
     data() {
@@ -32,7 +35,8 @@ export default {
             updateAvailable: false
         };
     },
-    created() {
+    async created() {
+        await firebase.auth().signInAnonymously();
         // Listen for our custom event from the SW registration
         document.addEventListener('swUpdated', this.setUpdate, { once: true });
         if(navigator.serviceWorker)

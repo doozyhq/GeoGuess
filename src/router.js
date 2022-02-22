@@ -2,6 +2,7 @@ import HistoryPage from '@/pages/HistoryPage';
 import Home from '@/pages/Home';
 import MedalsPage from '@/pages/MedalsPage';
 import StreetView from '@/pages/StreetView';
+import MultiplayerLobby from '@/pages/MultiplayerLobby';
 import Vue from 'vue';
 import Router from 'vue-router';
 import { GAME_MODE } from './constants';
@@ -55,6 +56,18 @@ export default new Router({
             component: MedalsPage,
         },
         {
+            path: '/street-view/rooms/:roomName',
+            name: 'with-friends',
+            component: StreetView,
+            props: (route) => {
+                debugger;
+                return {
+                    multiplayer: true,
+                    ...route.params,
+                };
+            },
+        },
+        {
             path: '/street-view/:modeSelected/:time',
             name: 'street-view',
             component: StreetView,
@@ -83,9 +96,9 @@ export default new Router({
             },
         },
         {
-            path: '/street-view/with-friends',
-            name: 'with-friends',
-            component: StreetView,
+            path: '/lobby/:roomName',
+            name: 'room',
+            component: MultiplayerLobby,
             props: (route) => ({
                 multiplayer: true,
                 ...route.params,

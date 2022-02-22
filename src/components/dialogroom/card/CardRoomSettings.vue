@@ -6,7 +6,7 @@
         <v-card-text class="settings">
             <v-row>
                 <v-col>
-                    <v-row>
+                    <!-- <v-row>
                         <label class="card_settings__mode__label">{{
                             $t('CardRoomSettings.modeLabel')
                         }}</label>
@@ -64,7 +64,7 @@
                                 <span>{{ $t('modes.custom_area') }}</span>
                             </v-btn>
                         </v-flex>
-                    </v-row>
+                    </v-row> -->
 
                     <v-row>
                         <label class="card_settings__time__label">{{
@@ -108,7 +108,7 @@
                                 :label="$t('CardRoomSettings.allowPan')"
                                 hide-details
                             />
-                            <br />
+                            <!-- <br />
                             <v-checkbox
                                 :input-value="gameSettings.allPanorama"
                                 @change="
@@ -153,9 +153,9 @@
                                             setGameSettings({ areaParams })
                                     "
                                 />
-                            </v-list-group>
+                            </v-list-group> -->
                         </div>
-                        <div>
+                        <!-- <div>
                             <v-text-field
                                 v-if="!singlePlayer"
                                 :label="$t('CardRoomSettings.countDownLabel')"
@@ -220,7 +220,7 @@
                                     </template>
                                 </v-checkbox>
                             </div>
-                        </div>
+                        </div> -->
                     </v-row>
                 </v-col>
             </v-row>

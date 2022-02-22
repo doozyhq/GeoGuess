@@ -39,6 +39,11 @@
     
                 <span class="main-text">{{ points }}</span>
             </div>
+            <div class="round-points-container">
+                <span class="sub-text">{{ $t('HeaderGame.players') }}: </span>
+    
+                <span class="main-text">{{ players }}</span>
+            </div>
         </v-app-bar>
     </div>
 </template>
@@ -55,6 +60,7 @@ export default {
         'remainingTime',
         'roomName',
         'nbRound',
+        'players',
     ],
     data() {
         return {

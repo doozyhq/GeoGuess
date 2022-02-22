@@ -10,6 +10,7 @@
                 :nb-round="nbRound"
                 :remaining-time="remainingTime"
                 :mode="mode"
+                :players="players"
             />
 
             <div id="game-interface">
@@ -31,11 +32,13 @@
                     </v-tooltip>
                     <Maps
                         ref="mapContainer"
+                        v-if="playerId != null"
                         :random-lat-lng="randomLatLng"
                         :random-feature-properties="randomFeatureProperties"
                         :room-name="roomName"
-                        :player-number="playerNumber"
+                        :player-id="playerId"
                         :player-name="playerName"
+                        :is-host="isHost"
                         :is-ready="isReady"
                         :round="round"
                         :score="score"
@@ -136,14 +139,22 @@ export default {
             default: false,
             type: Boolean,
         },
-        playerNumber: {
-            default: null,
-            type: Number,
+        // playerNumber: {
+        //     default: null,
+        //     type: Number,
+        // },
+        isHost: {
+            default: false,
+            type: Boolean,
         },
         playerName: {
             default: null,
             type: String,
         },
+        // playerId: {
+        //     type: String,
+        //     default: null
+        // },
         placeGeoJson: {
             default: null,
             type: Object,
@@ -234,6 +245,8 @@ export default {
             cptNotFoundLocation: 0,
             isVisibleDialog: false,
             panorama: null,
+            players: 0,
+            playerId: null,
 
             difficultyData: this.difficulty,
             bbox: this.bboxObj,
@@ -258,7 +271,8 @@ export default {
             this.$refs.streetView
         );
 
-        if (this.playerNumber == 1 || !this.multiplayer) {
+        if (this.isHost || !this.multiplayer) {
+            debugger;
             this.loadStreetView();
         }
 
@@ -271,29 +285,33 @@ export default {
                     this.hasTimerStarted = true;
                 }
             }
+            this.players = 1;
         } else {
-            // Set a room name if it's null to detect when the user refresh the page
-            if (!this.roomName) {
-                this.exitGame();
-            }
+            // // Set a room name if it's null to detect when the user refresh the page
+            // if (!this.roomName) {
+            //     this.exitGame();
+            // }
             this.room = firebase.database().ref(this.roomName);
             this.room.child('active').set(true);
             this.room.on('value', (snapshot) => {
+                this.playerId = firebase.auth().currentUser && firebase.auth().currentUser.uid || null;
                 // Check if the room is already removed
                 if (snapshot.hasChild('active')) {
+
+                    this.players = snapshot.child("player").numChildren();
                     // Put the player into the current round node if the player is not put yet
                     if (
                         !snapshot
                             .child('round' + this.round)
-                            .hasChild('player' + this.playerNumber)
+                            .hasChild(this.playerId)
                     ) {
                         this.room
                             .child('round' + this.round)
-                            .child('player' + this.playerNumber)
+                            .child(this.playerId)
                             .set(0);
 
                         // Other players load the streetview the first player loaded earlier
-                        if (this.playerNumber != 1) {
+                        if (!this.isHost) {
                             this.randomLat = snapshot
                                 .child(
                                     'streetView/round' +
@@ -368,9 +386,9 @@ export default {
                         snapshot.child('isGameDone').numChildren() ==
                         snapshot.child('size').val()
                     ) {
-                        this.room.child('active').remove();
-                        this.room.off();
-                        this.room.remove();
+                        // this.room.child('active').remove();
+                        // this.room.off();
+                        // this.room.remove();
                     }
                 } else {
                     // Force the players to exit the game when 'Active' is removed
@@ -700,10 +718,10 @@ export default {
 
             if (this.multiplayer) {
                 this.room
-                    .child('finalScore/player' + this.playerNumber)
+                    .child(`finalScore/${this.playerId}`)
                     .set(this.score);
                 this.room
-                    .child('finalPoints/player' + this.playerNumber)
+                    .child(`finalPoints/${this.playerId}`)
                     .set(this.points);
 
                 // Wait for other players to guess locations
@@ -746,7 +764,7 @@ export default {
             // Update the round
             this.round += 1;
 
-            if (this.playerNumber == 1 || !this.multiplayer) {
+            if (this.isHost || !this.multiplayer) {
                 this.loadStreetView();
                 if (!this.multiplayer && this.timeLimitation != 0) {
                     this.initTimer(this.timeLimitation);
@@ -754,7 +772,7 @@ export default {
             } else {
                 // Trigger listener and load the next streetview
                 this.room
-                    .child('trigger/player' + this.playerNumber)
+                    .child(`trigger/${this.playerId}`)
                     .set(this.round);
             }
             this.$refs.mapContainer.startNextRound();
@@ -765,13 +783,13 @@ export default {
             this.dialogText = this.$t('StreetView.exitGame');
             this.dialogMessage = true;
             this.canExit = true;
-            if (this.room) {
-                this.room.off();
-                this.room.remove();
-                this.$router.push('/history');
-            } else {
-                this.$router.push('/');
-            }
+            // if (this.room) {
+            //     this.room.off();
+            //     this.room.remove();
+            //     this.$router.push('/history');
+            // } else {
+            //     this.$router.push('/');
+            // }
         },
         finishGame() {
             this.canExit = true;

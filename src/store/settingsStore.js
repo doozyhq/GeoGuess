@@ -46,17 +46,22 @@ export default {
         room: null,
         roomName: '',
         roomErrorMessage: null,
-        playerNumber: 0,
+        isHost: false,
         // SETTINGS
         gameSettings: new GameSettings(),
         players: [],
         name: localStorage.getItem('playerName') || '',
         invalidName: false,
+        playerId: null,
     }),
     mutations: {
         [MutationTypes.SETTINGS_SET_ROOM](state, roomName) {
             state.room = firebase.database().ref(roomName);
             state.roomName = roomName;
+            state.playerId =
+                (firebase.auth().currentUser &&
+                    firebase.auth().currentUser.uid) ||
+                null;
             // Open Modal
             if (!state.isOpenDialogRoom) {
                 state.loadRoom = true;
@@ -64,33 +69,40 @@ export default {
             }
 
             state.room.once('value', (snapshot) => {
-                if (snapshot.child('started').val()) {
-                    state.roomErrorMessage = i18n.t(
-                        'DialogRoom.alreadyStarted'
-                    );
-                    state.room.off();
-                    return;
-                }
+                const playerId = (state.playerId =
+                    firebase.auth().currentUser.uid);
+                // if (snapshot.child('started').val()) {
+                //     state.roomErrorMessage = i18n.t(
+                //         'DialogRoom.alreadyStarted'
+                //     );
+                //     state.room.off();
+                //     return;
+                // }
 
-                const numberOfPlayers = snapshot
-                    .child('playerName')
-                    .numChildren();
-                const playerNumber = numberOfPlayers + 1;
+                // debugger;
 
-                state.playerNumber = playerNumber;
-                const name = state.name === '' ? i18n.t(
-                                'CardRoomPlayerName.anonymousPlayerName'
-                            ) + playerNumber : state.name;
+                const numberOfPlayers = snapshot.child('player').numChildren();
+                // const playerNumber = numberOfPlayers + 1;
 
-                state.room.child('playerName/player'+playerNumber).onDisconnect().remove();
+                const name =
+                    state.name === ''
+                        ? i18n.t('CardRoomPlayerName.anonymousPlayerName') +
+                          playerNumber
+                        : state.name;
 
-                
+                // state.room
+                //     .child(`player/${playerId}`)
+                //     .onDisconnect()
+                //     .remove()
+                //     .catch(console.error);
+
                 if (numberOfPlayers === 0) {
                     // Put the tentative player's name into the room node
                     // So that other player can't enter as the first player while the player decide the name and room size
-                    state.room.child('playerName').update(
+                    state.room.child('player').update(
                         {
-                            player1: name,
+                            [`${playerId}/name`]: name,
+                            [`${playerId}/isHost`]: true,
                         },
                         (error) => {
                             if (!error) {
@@ -101,22 +113,31 @@ export default {
                                 });
                                 state.loadRoom = false;
                                 state.currentComponent = 'settingsMap';
+                                state.isHost = true;
                             }
                         }
                     );
                 } else {
-                    // Put other player's tentative name
-                    state.room
-                        .child('playerName/player' + playerNumber)
-                        .set(
-                            name,
-                            (error) => {
+                    const player = snapshot.child('player').val();
+                    if (player && player[playerId]) {
+                        state.isHost = player[playerId].isHost || false;
+                        state.loadRoom = false;
+                        if (state.isHost) {
+                            state.currentComponent = 'settingsMap';
+                        } else {
+                            state.currentComponent = 'playerName';
+                        }
+                    } else {
+                        // Put other player's tentative name
+                        state.room
+                            .child(`player`)
+                            .update({ [`${playerId}/name`]: name }, (error) => {
                                 if (!error) {
                                     state.loadRoom = false;
                                     state.currentComponent = 'playerName';
                                 }
-                            }
-                        );
+                            });
+                    }
                 }
             });
         },
@@ -136,10 +157,10 @@ export default {
                 ...settings,
             };
         },
-        [MutationTypes.SETTINGS_SET_DIFFICULTY](state, difficulty){
+        [MutationTypes.SETTINGS_SET_DIFFICULTY](state, difficulty) {
             state.difficulty = difficulty;
         },
-        [MutationTypes.SETTINGS_SET_BBOX](state, bbox){
+        [MutationTypes.SETTINGS_SET_BBOX](state, bbox) {
             state.bboxObj = bbox;
         },
         [MutationTypes.SETTINGS_SET_OPEN_DIALOG_ROOM](state, open) {
@@ -155,11 +176,12 @@ export default {
         },
         [MutationTypes.SETTINGS_SET_PLAYER_NAME](state, playerName) {
             state.invalidName = state.players.includes(playerName);
+            const playerId = firebase.auth().currentUser.uid;
             if (!state.invalidName) {
                 state.name = playerName;
-                state.room
-                    .child('playerName/player' + state.playerNumber)
-                    .set(playerName);
+                state.room.child(`player`).update({
+                    [`${playerId}/name`]: playerName,
+                });
             }
         },
         [MutationTypes.SETTINGS_SET_PLAYERS](state, players) {
@@ -189,15 +211,14 @@ export default {
             if (state.room != null) {
                 state.room.off();
                 if (cleanRoom) {
-                    if (state.playerNumber === 1) {
-                        // Remove the entire node if the player is the first player
-                        state.room.remove();
-                    } else {
-                        // Remove only the player's name node if the player isn't the first player
-                        state.room
-                            .child('playerName/player' + this.playerNumber)
-                            .remove();
-                    }
+                    // if (state.playerNumber === 1) {
+                    //     // Remove the entire node if the player is the first player
+                    //     state.room.remove();
+                    // } else {
+                    //     const playerId = firebase.auth().currentUser.uid;
+                    //     // Remove only the player's name node if the player isn't the first player
+                    //     state.room.child(`playerName/${playerId}`).remove();
+                    // }
                 }
             }
 
@@ -210,6 +231,7 @@ export default {
         },
 
         searchRoom({ commit, dispatch, state }, roomName) {
+            debugger;
             commit(MutationTypes.SETTINGS_SET_MODE_DIALOG_ROOM, false);
             if (roomName == '') {
                 commit(
@@ -221,14 +243,14 @@ export default {
             }
 
             state.room.on('value', (snapshot) => {
-                if (snapshot.child('playerName').exists())
+                if (snapshot.child('player').exists())
                     state.players = Object.values(
-                        snapshot.child('playerName').val()
-                    );
-
+                        snapshot.child('player').val()
+                    ).map((p) => p.name);
+                debugger;
                 if (
                     state.currentComponent === 'playerName' &&
-                    state.playerNumber !== 1 &&
+                    !state.isHost &&
                     snapshot.hasChild('size') &&
                     snapshot.hasChild('streetView')
                 ) {
@@ -253,8 +275,10 @@ export default {
                         ...state.gameSettings,
                         difficulty,
                         placeGeoJson: rootState.homeStore.map.geojson,
-                        bboxObj: bboxObj,                        
-                        ...(rootState.homeStore.map ? {mapDetails: rootState.homeStore.map.details} : undefined)
+                        bboxObj: bboxObj,
+                        ...(rootState.homeStore.map
+                            ? { mapDetails: rootState.homeStore.map.details }
+                            : undefined),
                     },
                 });
                 dispatch('closeDialogRoom');
@@ -282,22 +306,24 @@ export default {
             if (playerName === '') {
                 commit(
                     MutationTypes.SETTINGS_SET_PLAYER_NAME,
-                    i18n.t('CardRoomPlayerName.anonymousPlayerName') +' '+ state.playerNumber
+                    i18n.t('CardRoomPlayerName.anonymousPlayerName') +
+                        ' ' +
+                        state.playerNumber
                 );
-            }else{
+            } else {
                 localStorage.setItem('playerName', playerName);
                 commit(MutationTypes.SETTINGS_SET_PLAYER_NAME, playerName);
             }
-
         },
         startGame({ state, dispatch, rootState }) {
             let gameParams = {};
-            if (state.playerNumber === 1) {
+            if (state.isHost) {
                 gameParams = {
                     ...state.gameSettings,
                     difficulty: state.difficulty,
                     placeGeoJson: rootState.homeStore.map.geojson,
                     bboxObj: state.bboxObj,
+                    isHost: true,
                 };
                 // Set flag started
                 state.room.update({
@@ -335,7 +361,7 @@ export default {
                     ...gameParams,
                     roomName: state.roomName,
                     playerName: state.name,
-                    playerNumber: state.playerNumber,
+                    playerId: state.playerId,
                     placeGeoJson: rootState.homeStore.map.geojson,
                     multiplayer: true,
                 },

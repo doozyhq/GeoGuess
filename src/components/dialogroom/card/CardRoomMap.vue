@@ -21,7 +21,7 @@
                     full-width
                     @input="loadPlaceGeoJSON"
                 />
-                <v-btn
+                <!-- <v-btn
                     @click="loadPlaceGeoJSON(place)"
                     color="dark"
                     dark
@@ -29,7 +29,7 @@
                     :loading="loadingGeoJson"
                 >
                     {{ $t('CardRoomMap.loadBtn') }}
-                </v-btn>
+                </v-btn> -->
             </v-row>
             <GmapMap
                 ref="mapRef"
@@ -93,7 +93,9 @@ export default {
     watch: {
         search(val) {
             // Items have already been requested
-            if (!val) return;
+            if (!val) {
+                this.entries = [];
+            };
 
             this.isLoading = true;
 

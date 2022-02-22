@@ -187,7 +187,7 @@ export default {
         'randomLatLng',
         'randomFeatureProperties',
         'roomName',
-        'playerNumber',
+        'playerId',
         'playerName',
         'isReady',
         'round',
@@ -205,6 +205,7 @@ export default {
         'areasGeoJsonUrl',
         'pathKey',
         'mapDetails',
+        'isHost'
     ],
     data() {
         return {
@@ -236,7 +237,7 @@ export default {
     },
     computed: {
         isNextButtonEnabled() {
-            if (this.playerNumber == 1 || !this.room) {
+            if (this.isHost || !this.room) {
                 return true;
             } else {
                 if (this.isNextStreetViewReady) {
@@ -262,12 +263,12 @@ export default {
             this.room.on('value', (snapshot) => {
                 // Check if the room is already removed
                 if (snapshot.hasChild('active')) {
-                    size = snapshot.child('size').val();
-                    if (size === 1) {
-                        this.room.onDisconnect().remove();
-                    } else {
-                        this.room.onDisconnect().update({ size: size - 1 });
-                    }
+                    // size = snapshot.child('size').val();
+                    // if (size === 1) {
+                    //     this.room.onDisconnect().remove();
+                    // } else {
+                    //     this.room.onDisconnect().update({ size: size - 1 });
+                    // }
                     if (
                         // If Time Attack and 1st true guess finish round
                         (this.timeAttack &&
@@ -308,9 +309,9 @@ export default {
                             }
 
                             const playerName = snapshot
-                                .child('playerName')
+                                .child('player')
                                 .child(childSnapshot.key)
-                                .val();
+                                .val().name;
                             const roundValues = snapshot
                                 .child('round' + this.round + '/' + childSnapshot.key)
                                 .exportVal();
@@ -345,7 +346,7 @@ export default {
                         this.$refs.map.fitBounds();
                         this.game.rounds.push({
                             position: {
-                                ...this.randomLatLng.toJSON(),
+                                ...this.randomLatLng,
                                 area: this.area,
                             },
                             players,
@@ -362,9 +363,9 @@ export default {
                                 .child('finalPoints')
                                 .forEach((childSnapshot) => {
                                     const playerName = snapshot
-                                        .child('playerName')
+                                        .child('player')
                                         .child(childSnapshot.key)
-                                        .val();
+                                        .val().name;
                                     const finalScore = snapshot
                                         .child('finalScore')
                                         .child(childSnapshot.key)
@@ -437,7 +438,7 @@ export default {
                 // Save the selected location into database
                 // So that it uses for putting the markers and polylines
                 this.room
-                    .child('guess/player' + this.playerNumber)
+                    .child(`guess/${this.playerId}`)
                     .set(getSelectedPos(this.selectedPos, this.mode));
             } else {
                 // Put the marker on the random location
@@ -512,7 +513,7 @@ export default {
             // Save the distance into firebase
             if (this.room) {
                 this.room
-                    .child('round' + this.round + '/player' + this.playerNumber)
+                    .child('round' + this.round + `/${this.playerId}`)
                     .set({
                         ...getSelectedPos(this.selectedPos, this.mode),
                         distance: this.distance,
@@ -566,7 +567,7 @@ export default {
             this.dialogSummary = false;
             if (this.room)
                 this.room
-                    .child('isGameDone/player' + this.playerNumber)
+                    .child(`isGameDone/${this.playerId}`)
                     .set(true);
             this.$emit('finishGame');
         },
