@@ -237,7 +237,6 @@ export default {
     },
     computed: {
         isNextButtonEnabled() {
-            debugger;
             if (this.isHost || !this.room) {
                 return true;
             } else {

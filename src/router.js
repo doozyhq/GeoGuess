@@ -60,7 +60,6 @@ export default new Router({
             name: 'with-friends',
             component: StreetView,
             props: (route) => {
-                debugger;
                 return {
                     multiplayer: true,
                     ...route.params,
