@@ -660,32 +660,32 @@ export default {
                     Math.round((this.endTime - Date.now()) / 1000)
                 );
                 if (this.remainingTime > 0) {
-                    setTimeout(() => {
-                        this.startTimer(round);
-                    }, 1000);
+                    // setTimeout(() => {
+                    this.startTimer(round);
+                    // }, 1000);
                 } else {
                     this.timerInProgress = false;
-                    if (!this.hasLocationSelected) {
-                        if (
-                            [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
-                                this.mode
-                            )
-                        ) {
-                            this.$refs.mapContainer.selectRandomLocation(
-                                getRandomArea(
-                                    this.areasJson,
-                                    this.areaParams
-                                        ? this.areaParams.data.pathKey
-                                        : 'iso_a2'
-                                )
-                            );
-                        } else {
-                            // Set a random location if the player didn't select a location in time
-                            this.$refs.mapContainer.selectRandomLocation(
-                                this.getRandomLatLng().position
-                            );
-                        }
-                    }
+                    // if (!this.hasLocationSelected) {
+                    //     if (
+                    //         [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
+                    //             this.mode
+                    //         )
+                    //     ) {
+                    //         this.$refs.mapContainer.selectRandomLocation(
+                    //             getRandomArea(
+                    //                 this.areasJson,
+                    //                 this.areaParams
+                    //                     ? this.areaParams.data.pathKey
+                    //                     : 'iso_a2'
+                    //             )
+                    //         );
+                    //     } else {
+                    //         // Set a random location if the player didn't select a location in time
+                    //         this.$refs.mapContainer.selectRandomLocation(
+                    //             this.getRandomLatLng().position
+                    //         );
+                    //     }
+                    // }
                 }
             }
         },
