@@ -2,8 +2,8 @@
     <v-dialog
         :value="dialogSummary"
         max-width="720"
-        persistent
         :fullscreen="$viewport.width < 450"
+        @click:outside="closeDialog"
     >
         <v-card color="#061422">
             <v-card-text id="card-text">
@@ -130,6 +130,9 @@ export default {
         finishGame() {
             this.$emit('finishGame');
         },
+        closeDialog() {
+            this.$emit('closeDialog');
+        }
     },
 };
 </script>

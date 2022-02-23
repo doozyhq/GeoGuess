@@ -287,8 +287,10 @@ export default {
                 this.isHost = false;
                 this.playerName = null;
             }
-            this.isLoading = false;
-            this.nbRound= 6;
+            this.isLoading = false; 
+            if (snapshot.child("nbRound").exists()) {
+                this.nbRound = snapshot.child("nbRound").val();
+            }
 
             // Check if the room is already removed
             if (snapshot.hasChild('active')) {
@@ -600,7 +602,7 @@ export default {
                 document
                     .querySelector('#street-view a[href^="https://maps"]')
                     .remove();
-            setTimeout(() => {
+            Vue.nextTick(() => {
                 if (document.querySelector('.widget-scene')) {
                     document
                         .querySelector('.widget-scene')
@@ -628,7 +630,7 @@ export default {
                             this.onUserEventPanoramaMouse
                         );
                 }
-            }, 50);
+            });
 
             if(data && data.location) {
                 this.panorama.setPano(data.location.pano);
@@ -746,7 +748,7 @@ export default {
 
         async goToNextRound() {
             if (this.isHost) {
-                await this.room.ref.child("round").set(this.round + 1);
+                await this.room.ref.update({"round": this.round + 1, nbRound: this.round >= this.nbRound ? this.nbRound + 5 : this.nbRound });
             }
         },
         

@@ -101,6 +101,7 @@
             v-if="!printMapFull"
             ref="refNotepad"
         />
+        <div id="button-container">
         <button
             v-if="
                 !isNextButtonVisible &&
@@ -119,22 +120,19 @@
             {{ $t('Maps.guess') }}
         </button>
         <button
-            v-if="isNextButtonEnabled && isNextButtonVisible"
-            id="next-button"
-            :disabled="!isNextButtonEnabled"
-            :style="{
-                backgroundColor: isNextButtonEnabled ? '#F44336' : '#B71C1C',
-            }"
-            @click="goToNextRound(false)"
-        >
-            {{ $t('Maps.nextRound') }}
-        </button>
-        <button
             v-if="isSummaryButtonVisible"
             id="summary-button"
             @click="dialogSummary = true"
         >
             {{ $t('Maps.viewSummary') }}
+        </button>
+        <button
+            v-if="isNextButtonEnabled && isNextButtonVisible"
+            v-bind:id="isSummaryButtonVisible ? 'play-again-button' : 'next-button'"
+            :disabled="!isNextButtonEnabled"
+            @click="goToNextRound(false)"
+        >
+            {{ isSummaryButtonVisible ? $t('Maps.playAgain') : $t('Maps.nextRound') }}
         </button>
 
         <button
@@ -149,7 +147,7 @@
             @click="showMap"
         >
             {{ $t('Maps.makeGuess') }}
-        </button>
+        </button></div>
         <DialogSummary
             :dialog-summary="dialogSummary"
             :summary-texts="summaryTexts"
@@ -160,6 +158,7 @@
             :multiplayer="!!room"
             :mapDetails="mapDetails"
             @finishGame="finishGame"
+            @closeDialog="closeSummaryDialog"
             @playAgain="goToNextRound(true)"
         />
     </div>
@@ -261,6 +260,7 @@ export default {
                 // Check if the room is already removed
                 if (snapshot.hasChild('active')) {
                     const round = snapshot.child("round").val();
+                    const nbRound = snapshot.child("nbRound").val() || this.nbRound;
                     size = Object.values(snapshot.child('player').val()).filter(p => p.isOnline).length;
                     
                     const hasRoundEnded = Object.values(snapshot.child(`round${round}`).val() || {}).filter(v => v !== 0).length === size;
@@ -368,7 +368,7 @@ export default {
                         // Remove guess node every time the round is done
                         this.room.child('guess').remove();
 
-                        if (this.round >= this.nbRound) {
+                        if (round >= nbRound) {
                             // Show summary button
                             let results = [];
                             
@@ -399,9 +399,12 @@ export default {
                             
                             this.summaryTexts = results;
                             this.isSummaryButtonVisible = true;
+                            this.isNextButtonVisible = true;
                         } else {
                             // Show next button
                             this.isNextButtonVisible = true;
+                            this.summaryTexts = [];
+                            this.isSummaryButtonVisible = false;
                         }
                     }
 
@@ -521,6 +524,7 @@ export default {
             this.countdownStarted = false;
             this.isNotepadVisible = false;
             this.isNextStreetViewReady = true;
+            this.isSummaryButtonVisible = false;
 
             if (this.$viewport.width < 450) {
                 // Hide the map if the player is on mobile
@@ -546,6 +550,9 @@ export default {
                     .set(true);
             this.$emit('finishGame');
         },
+        closeSummaryDialog() {
+            this.dialogSummary = false;
+        }
     },
 };
 </script>
@@ -661,6 +668,7 @@ export default {
     text-align: center;
     padding: 10px 0;
     z-index: 999;
+    width: 100%;
 }
 
 
@@ -693,11 +701,19 @@ button.w-50 {
     background-color: #43b581;
 }
 
-#next-button,
-#summary-button {
+#next-button {
     background-color: #f44336;
 }
 
+#summary-button {
+    background:#000;
+}
+
+#button-container {
+    display: flex;
+    width: 100%;
+    
+}
 @media (max-width: 750px) {
     #container-map {
         --inactive-width: 25vw;
@@ -759,7 +775,6 @@ button.w-50 {
         bottom: 0;
         width: 100%;
     }
-
 
     #hide-map-button {
         position: absolute;
