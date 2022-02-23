@@ -22,6 +22,7 @@ import MapMixin from './mixins/MapMixin';
 export default {
     name: 'Map',
     mixins: [MapMixin],
+    props: ["enableClick"],
     data() {
         return {
             map: null,
@@ -132,6 +133,9 @@ export default {
         startNextRound() {
             this.$refs.mapRef.$mapPromise.then(() => {
                 this.map.addListener('click', (e) => {
+                    if (!this.enableClick) {
+                        return;
+                    }
                     // Clear the previous marker when clicking the map
                     this.removeMarkers();
 
@@ -139,7 +143,7 @@ export default {
                     this.putMarker(e.latLng);
 
                     // Save latLng
-                    this.$emit('tedPos', e.latLng);
+                    this.$emit('setSeletedPos', e.latLng);
                 });
                 this.centerOnBbox();
             });

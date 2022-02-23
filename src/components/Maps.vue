@@ -80,6 +80,7 @@
             id="map"
             ref="map"
             :bbox="bbox"
+            :enableClick="this.enableClick"
             @setSeletedPos="setSeletedPos"
         />
         <MapAreas
@@ -234,6 +235,7 @@ export default {
                 rounds: [],
             },
             startTime: null,
+            enableClick: false
         };
     },
     computed: {
@@ -291,11 +293,16 @@ export default {
                         let i = 0;
                         let players = {};
                         
+                        this.enableClick = false;
                         this.$refs.map.removeMarkers();
                         this.$refs.map.removePolylines();
 
                         if (snapshot.child(`round${this.round}`).numChildren() > 0) {
                             snapshot.child(`round${this.round}`).forEach((childSnapshot) => {
+                                if (childSnapshot.val() === 0){
+                                    // No answer give, skip
+                                    return;
+                                }
                                 let posGuess;
                                 if (this.mode === GAME_MODE.CLASSIC) {
                                     const lat = childSnapshot
@@ -533,6 +540,7 @@ export default {
             this.startTime = new Date();
             this.$refs.map.setZoom(2);
             this.$refs.map.startNextRound();
+            this.enableClick = true;
         },
         goToNextRound(isPlayAgain = false) {
             this.$emit('goToNextRound', isPlayAgain);
