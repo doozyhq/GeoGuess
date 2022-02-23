@@ -10,6 +10,7 @@
                 :nb-round="nbRound"
                 :remaining-time="remainingTime"
                 :mode="mode"
+                :start-time="startTime"
                 :players="players"
             />
 
@@ -56,6 +57,7 @@
                             areaParams ? areaParams.data.pathKey : 'iso_a2'
                         "
                         :mapDetails="mapDetails"
+                        :start-time="startTime"
                         @resetLocation="resetLocation"
                         @calculateDistance="updateScore"
                         @showResult="showResult"
@@ -242,6 +244,7 @@ export default {
             playerId: null,
             isHost: false,
             playerName: "",
+            startTime: null,
 
             difficultyData: this.difficulty,
             bbox: this.bboxObj,
@@ -310,6 +313,10 @@ export default {
                         .set(0);
                 }
 
+                if (snapshot.child('startTime').exists()) {
+                    this.startTime = new Date(snapshot.child('startTime').val());
+                }
+
                 // Load the streetview when it's ready
                 if (snapshot.child(`streetView/round${this.round}`).exists() && this.round !== this.streetView) {
                     this.startNextRound();
@@ -360,7 +367,7 @@ export default {
 
                     if (this.timeLimitation != 0) {
                         if (!this.hasTimerStarted) {
-                            this.initTimer(this.timeLimitation);
+                            this.initTimer(this.timeLimitation,this.startTime);
                             this.hasTimerStarted = true;
                         }
                     }
@@ -534,6 +541,7 @@ export default {
                         this.area = areaCode;
 
                         // Put the streetview's location into firebase
+                        this.room.child('startTime').set(Date.now());
                         this.room
                             .child('streetView/round' + this.round)
                             .set({
@@ -545,6 +553,7 @@ export default {
                                 warning: this.isVisibleDialog,
                             });
                     } else {
+                        this.room.child('startTime').set(Date.now());
                         this.room
                             .child('streetView/round' + this.round)
                             .set({
@@ -631,8 +640,7 @@ export default {
 
             this.panorama.setZoom(0);
         },
-        initTimer(time, printAlert) {
-            const endDate = new Date();
+        initTimer(time, endDate, printAlert) {
             endDate.setSeconds(endDate.getSeconds() + time);
             if (printAlert) {
                 this.timeCountdown = time;

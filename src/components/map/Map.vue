@@ -11,7 +11,8 @@
                 mapTypeControl: false,
                 streetViewControl: false,
                 draggableCursor: 'crosshair',
-                clickableIcons: false
+                clickableIcons: false,
+                gestureHandling: 'greedy'
             }"
         />
     </div>

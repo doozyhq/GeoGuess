@@ -135,7 +135,7 @@
         "title": "Type a room name to create a new room or join a existing room"
     },
     "CardRoomPlayerName": {
-        "title": "Room:",
+        "title": "Joining Geo Guess!",
         "input": "What's your name?",
         "anonymousPlayerName": "Anonymous 🕵",
         "players": "1 player | {count} players"

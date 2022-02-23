@@ -52,10 +52,10 @@ export default {
         'roomName',
         'nbRound',
         'players',
+        'startTime'
     ],
     data() {
         return {
-            startedAt: null,
             timerText: '',
             intervalFunction: null,
         };
@@ -84,11 +84,10 @@ export default {
             if (this.remainingTime != 0) {
                 return;
             }
-            this.startedAt = new Date();
 
             this.intervalFunction = setInterval(() => {
                 this.timerText = getCountdownText(
-                    Math.round((Date.now() - this.startedAt) / 1000)
+                    Math.round((Date.now() - this.startTime) / 1000)
                 );
             }, 1000);
         },

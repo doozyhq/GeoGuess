@@ -3,17 +3,16 @@
         <v-card-title>
             <span id="card-title">
                 {{ $t('CardRoomPlayerName.title') }}
-                <span :class="{ blur: streamerMode }">{{ roomName }}</span>
             </span>
         </v-card-title>
 
-        <v-card-subtitle ref="roomUrl" class="pb-0">
+        <!-- <v-card-subtitle ref="roomUrl" class="pb-0">
             <span :class="{ blur: streamerMode }">{{ roomUrl }} </span>
             <v-icon small @click="copy"> mdi-content-copy </v-icon>
-        </v-card-subtitle>
+        </v-card-subtitle> -->
         <v-card-text>
             <v-container>
-                <v-row>
+                <!-- <v-row>
                     <v-col cols="12">
                         <v-text-field
                             id="inputPlayerName"
@@ -25,7 +24,7 @@
                             :error="invalidName"
                         />
                     </v-col>
-                </v-row>
+                </v-row> -->
 
                 <h3>{{ $tc('CardRoomPlayerName.players', players.length) }}</h3>
 
@@ -57,7 +56,7 @@
         </v-card-text>
         <v-card-actions>
             <div class="flex-grow-1" />
-            <v-btn dark depressed color="error" @click="cancel">
+            <v-btn v-if="isHost" dark depressed color="error" @click="cancel">
                 {{ $t('cancel') }}
             </v-btn>
             <v-btn

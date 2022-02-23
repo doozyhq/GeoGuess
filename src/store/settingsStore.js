@@ -228,6 +228,14 @@ export default {
                 ) {
                     dispatch('startGame');
                 }
+
+                // User is already registered and game is running. autojoin.
+                if (
+                    snapshot.child('active').val() === true &&
+                    snapshot.child('player').child(state.playerId).exists()
+                ) {
+                    dispatch('startGame');
+                }
             });
         },
         setSettings({ commit, state, rootState, dispatch }) {

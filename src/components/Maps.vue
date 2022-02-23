@@ -206,7 +206,8 @@ export default {
         'areasGeoJsonUrl',
         'pathKey',
         'mapDetails',
-        'isHost'
+        'isHost',
+        'startTime'
     ],
     data() {
         return {
@@ -233,7 +234,6 @@ export default {
                 date: new Date(),
                 rounds: [],
             },
-            startTime: null,
             enableClick: false
         };
     },
@@ -531,7 +531,6 @@ export default {
             this.$refs.map.removeMarkers();
             this.$refs.map.removePolylines();
 
-            this.startTime = new Date();
             this.$refs.map.setZoom(2);
             this.$refs.map.startNextRound();
             this.enableClick = true;
