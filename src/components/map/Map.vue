@@ -139,7 +139,7 @@ export default {
                     this.putMarker(e.latLng);
 
                     // Save latLng
-                    this.$emit('setSeletedPos', e.latLng);
+                    this.$emit('tedPos', e.latLng);
                 });
                 this.centerOnBbox();
             });
@@ -159,6 +159,12 @@ export default {
 
             this.map.fitBounds(bounds);
         },
+        getZoom() {
+            return this.map.getZoom();
+        },
+        setZoom(zoom) {
+            return this.map.setZoom(zoom);
+        }
     },
 };
 </script>

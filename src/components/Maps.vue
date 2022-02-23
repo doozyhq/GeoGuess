@@ -290,59 +290,65 @@ export default {
                         // Put markers and draw polylines on the map
                         let i = 0;
                         let players = {};
+                        
+                        this.$refs.map.removeMarkers();
+                        this.$refs.map.removePolylines();
 
-                        snapshot.child('guess').forEach((childSnapshot) => {
-                            let posGuess;
-                            if (this.mode === GAME_MODE.CLASSIC) {
-                                const lat = childSnapshot
-                                    .child('latitude')
-                                    .val();
-                                const lng = childSnapshot
-                                    .child('longitude')
-                                    .val();
-                                posGuess = new google.maps.LatLng({
-                                    lat: lat,
-                                    lng: lng,
-                                });
-                            } else {
-                                posGuess = childSnapshot.child('area').val();
-                            }
+                        if (snapshot.child(`round${this.round}`).numChildren() > 0) {
+                            snapshot.child(`round${this.round}`).forEach((childSnapshot) => {
+                                let posGuess;
+                                if (this.mode === GAME_MODE.CLASSIC) {
+                                    const lat = childSnapshot
+                                        .child('latitude')
+                                        .val();
+                                    const lng = childSnapshot
+                                        .child('longitude')
+                                        .val();
+                                    posGuess = new google.maps.LatLng({
+                                        lat: lat,
+                                        lng: lng,
+                                    });
+                                } else {
+                                    posGuess = childSnapshot.child('area').val();
+                                }
 
-                            const playerName = snapshot
-                                .child('player')
-                                .child(childSnapshot.key)
-                                .val().name;
-                            const roundValues = snapshot
-                                .child('round' + this.round + '/' + childSnapshot.key)
-                                .exportVal();
+                                const playerName = snapshot
+                                    .child('player')
+                                    .child(childSnapshot.key)
+                                    .val().name;
+                                    
+                                const roundValues = snapshot
+                                    .child('round' + this.round + '/' + childSnapshot.key)
+                                    .exportVal();
 
-                            const { points, distance } = roundValues;
+                                const { points, distance } = roundValues;
 
-                            players[playerName] = {
-                                ...roundValues,
-                                guess: posGuess,
-                            };
-                            this.$refs.map.drawPolyline(
-                                posGuess,
-                                i,
-                                this.randomLatLng
-                            );
-                            this.$refs.map.putMarker(
-                                posGuess,
-                                false,
-                                playerName && playerName.length > 0
-                                    ? playerName[0].toUpperCase()
-                                    : ''
-                            );
-                            this.$refs.map.setInfoWindow(
-                                playerName,
-                                distance,
-                                points,
-                                false,
-                                posGuess
-                            );
-                            i++;
-                        });
+                                players[playerName] = {
+                                    ...roundValues,
+                                    guess: posGuess,
+                                };
+                                this.$refs.map.drawPolyline(
+                                    posGuess,
+                                    i,
+                                    this.randomLatLng
+                                );
+                                this.$refs.map.putMarker(
+                                    posGuess,
+                                    false,
+                                    playerName && playerName.length > 0
+                                        ? playerName[0].toUpperCase()
+                                        : ''
+                                );
+                                this.$refs.map.setInfoWindow(
+                                    playerName,
+                                    distance,
+                                    points,
+                                    false,
+                                    posGuess
+                                );
+                                i++;
+                            });
+                        }                   
 
                         this.game.rounds.push({
                             position: {
@@ -351,8 +357,11 @@ export default {
                             },
                             players,
                         });
-                        this.$refs.map.fitBounds();
                         this.$refs.map.putMarker(this.randomLatLng, true);
+                        this.$refs.map.fitBounds();
+
+                        // If we have a single point, we're sometime waaaaay zoomed in
+                        this.$refs.map.setZoom(Math.min(3, Math.max(2, this.$refs.map.getZoom())));
 
                         this.printMapFull = true;
                         // Remove guess node every time the round is done
@@ -395,13 +404,6 @@ export default {
                         }
                     }
 
-                    // Allow other players to move on to the next round when the next street view is set=
-                    if (
-                        snapshot.child('streetView').numChildren() == round
-                    ) {
-                        this.isNextStreetViewReady = true;
-                    }
-
                     if (
                         !this.countdownStarted &&
                         !this.printMapFull &&
@@ -409,7 +411,6 @@ export default {
                         snapshot.child('guess').numChildren() >= 1
                     ) {
                         this.$parent.initTimer(this.countdown, true);
-
                         this.countdownStarted = true;
                     }
                 }
@@ -443,35 +444,8 @@ export default {
                 this.room
                     .child(`guess/${this.playerId}`)
                     .set(getSelectedPos(this.selectedPos, this.mode));
-            } else {
-                // Put the marker on the random location
-                this.$refs.map.putMarker(this.randomLatLng, true);
-                // Show the polyline
-                this.$refs.map.drawPolyline(
-                    this.selectedPos,
-                    1,
-                    this.randomLatLng
-                );
-
-                this.$refs.map.setInfoWindow(
-                    null,
-                    this.distance,
-                    this.point,
-                    false,
-                    this.setSeletedPos
-                );
-                this.printMapFull = true;
-                this.$refs.map.fitBounds();
-                if (this.round >= this.nbRound) {
-                    this.isSummaryButtonVisible = true;
-                } else {
-                    this.isNextButtonVisible = true;
-                }
-                this.$emit('showResult');
             }
-            // Clear the event
-            this.$refs.map.removeListener();
-
+            
             // Diable guess button and opacity of the map
             this.isGuessButtonClicked = true;
             this.isSelected = true;
@@ -522,6 +496,7 @@ export default {
                         distance: this.distance,
                         points: this.point,
                         timePassed,
+                        area:this.area
                     });
             } else {
                 this.game.rounds.push({
@@ -537,7 +512,6 @@ export default {
             this.$emit('calculateDistance', this.distance, this.point);
         },
         startNextRound() {
-            this.$refs.map.startNextRound();
             // Reset
             this.selectedPos = null;
             this.isGuessButtonClicked = false;
@@ -557,7 +531,8 @@ export default {
             this.$refs.map.removePolylines();
 
             this.startTime = new Date();
-            this.map && this.map.setZoom(4);
+            this.$refs.map.setZoom(2);
+            this.$refs.map.startNextRound();
         },
         goToNextRound(isPlayAgain = false) {
             this.$emit('goToNextRound', isPlayAgain);
