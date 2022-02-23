@@ -218,7 +218,9 @@ export default {
                 if (snapshot.child('player').exists())
                     state.players = Object.values(
                         snapshot.child('player').val()
-                    ).map((p) => p.name);
+                    )
+                        .filter((p) => p.isOnline)
+                        .map((p) => p.name);
 
                 if (
                     state.currentComponent === 'playerName' &&

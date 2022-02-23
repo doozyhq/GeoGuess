@@ -12,7 +12,9 @@
                 streetViewControl: false,
                 draggableCursor: 'crosshair',
                 clickableIcons: false,
-                gestureHandling: 'greedy'
+                gestureHandling: 'greedy',
+                maxZoom: 15,
+                minZoom: 2
             }"
         />
     </div>

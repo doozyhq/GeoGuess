@@ -101,6 +101,7 @@
 <script>
 import firebase from 'firebase/app';
 import 'firebase/database';
+import Vue from 'vue';
 
 import HeaderGame from '@/components/HeaderGame';
 import Maps from '@/components/Maps';
@@ -226,7 +227,7 @@ export default {
             timeLimitation: this.time,
             mode: this.modeSelected,
             timeAttack: this.timeAttackSelected,
-            nbRound: this.timeAttackSelected ? 10 : 5,
+            nbRound: this.nbRound || this.timeAttackSelected ? 10 : 5,
             remainingTime: 0,
             endTime: null,
             hasTimerStarted: false,
@@ -275,7 +276,7 @@ export default {
         this.room.on('value', async (snapshot) => {
             this.playerId = firebase.auth().currentUser && firebase.auth().currentUser.uid || null;
 
-            if (this.playerId && snapshot.child('player').child(this.playerId)) {
+            if (this.playerId && snapshot.child('player').child(this.playerId).exists()) {
                 this.isHost = snapshot.child('player').child(this.playerId).val().isHost || false;
                 this.playerName = snapshot.child('player').child(this.playerId).val().name || false;
 
@@ -287,6 +288,7 @@ export default {
                 this.playerName = null;
             }
             this.isLoading = false;
+            this.nbRound= 6;
 
             // Check if the room is already removed
             if (snapshot.hasChild('active')) {
@@ -312,7 +314,6 @@ export default {
                         .child(this.playerId)
                         .set(0);
                 }
-
                 if (snapshot.child('startTime').exists()) {
                     this.startTime = new Date(snapshot.child('startTime').val());
                 }
@@ -320,6 +321,8 @@ export default {
                 // Load the streetview when it's ready
                 if (snapshot.child(`streetView/round${this.round}`).exists() && this.round !== this.streetView) {
                     this.startNextRound();
+                    this.hasLocationSelected = snapshot.child(`round${this.round}`).child(this.playerId).exists() && snapshot.child(`round${this.round}`).child(this.playerId).val() !== 0;
+
                     this.randomLat = snapshot
                         .child(
                             'streetView/round' +
@@ -355,10 +358,7 @@ export default {
                                 '/roundInfo'
                         )
                         .val();
-                    this.randomLatLng = new google.maps.LatLng(
-                        this.randomLat,
-                        this.randomLng
-                    );
+                        
                     this.streetView = this.round;
                     // Countdown timer starts
                     this.timeLimitation = snapshot
@@ -660,32 +660,35 @@ export default {
                     Math.round((this.endTime - Date.now()) / 1000)
                 );
                 if (this.remainingTime > 0) {
-                    // setTimeout(() => {
-                    this.startTimer(round);
-                    // }, 1000);
+                    setTimeout(() => {
+                        this.startTimer(round);
+                    }, 1000);
                 } else {
-                    this.timerInProgress = false;
-                    // if (!this.hasLocationSelected) {
-                    //     if (
-                    //         [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
-                    //             this.mode
-                    //         )
-                    //     ) {
-                    //         this.$refs.mapContainer.selectRandomLocation(
-                    //             getRandomArea(
-                    //                 this.areasJson,
-                    //                 this.areaParams
-                    //                     ? this.areaParams.data.pathKey
-                    //                     : 'iso_a2'
-                    //             )
-                    //         );
-                    //     } else {
-                    //         // Set a random location if the player didn't select a location in time
-                    //         this.$refs.mapContainer.selectRandomLocation(
-                    //             this.getRandomLatLng().position
-                    //         );
-                    //     }
-                    // }
+                    setTimeout(() => {
+                        this.timerInProgress = false;
+                        debugger;
+                        if (!this.hasLocationSelected) {
+                            if (
+                                [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
+                                    this.mode
+                                )
+                            ) {
+                                this.$refs.mapContainer.selectRandomLocation(
+                                    getRandomArea(
+                                        this.areasJson,
+                                        this.areaParams
+                                            ? this.areaParams.data.pathKey
+                                            : 'iso_a2'
+                                    )
+                                );
+                            } else {
+                                // Set a random location if the player didn't select a location in time
+                                this.$refs.mapContainer.selectRandomLocation(
+                                    this.getRandomLatLng().position
+                                );
+                            }
+                        }
+                    }, 1000);
                 }
             }
         },
