@@ -56,9 +56,9 @@
         </v-card-text>
         <v-card-actions>
             <div class="flex-grow-1" />
-            <v-btn v-if="isHost" dark depressed color="error" @click="cancel">
+            <!-- <v-btn v-if="isHost" dark depressed color="error" @click="cancel">
                 {{ $t('cancel') }}
-            </v-btn>
+            </v-btn> -->
             <v-btn
                 v-if="isHost"
                 id="btnStart"

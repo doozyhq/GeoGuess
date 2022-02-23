@@ -227,9 +227,9 @@
         </v-card-text>
         <v-card-actions>
             <div class="flex-grow-1" />
-            <v-btn dark depressed color="error" @click="cancel">
+            <!-- <v-btn dark depressed color="error" @click="cancel">
                 {{ $t('cancel') }}
-            </v-btn>
+            </v-btn> -->
             <v-btn
                 id="btnNextSettings"
                 dark
