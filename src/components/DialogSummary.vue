@@ -65,15 +65,6 @@
                     justify="center"
                 >
                     <v-btn
-                        id="play-again-button"
-                        class="mt-8"
-                        dark
-                        color="#43B581"
-                        @click="$emit('finishGame')"
-                    >
-                        {{ $t('DialogSummary.viewDetails') }}
-                    </v-btn>
-                    <v-btn
                         v-if="!multiplayer"
                         id="exit-button"
                         class="mt-8"

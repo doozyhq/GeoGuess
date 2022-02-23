@@ -312,6 +312,7 @@ export default {
 
                 // Load the streetview when it's ready
                 if (snapshot.child(`streetView/round${this.round}`).exists() && this.round !== this.streetView) {
+                    this.startNextRound();
                     this.randomLat = snapshot
                         .child(
                             'streetView/round' +
@@ -351,14 +352,7 @@ export default {
                         this.randomLat,
                         this.randomLng
                     );
-                    this.resetLocation();
                     this.streetView = this.round;
-                    this.dialogMessage = false;
-                    this.dialogText = '';
-
-                    this.isReady = true;
-                    this.$refs.mapContainer.startNextRound();
-
                     // Countdown timer starts
                     this.timeLimitation = snapshot
                         .child('timeLimitation')
@@ -716,7 +710,7 @@ export default {
             this.overlay = true;
             this.$refs.header.stopTimer();
         },
-       async goToNextRound(playAgain = false) {
+        startNextRound(playAgain = false) {
             if (playAgain) {
                 this.round = 0;
                 this.scoreHeader = 0;
@@ -734,18 +728,15 @@ export default {
             this.isVisibleDialog = false;
             this.randomFeatureProperties = null;
 
-            this.dialogMessage = true; // Show the dialog while waiting for other players
-            this.isReady = false; // Turn off the flag so the click event can be added in the next round
+            this.dialogMessage = false; // Show the dialog while waiting for other players
+            this.isReady = true; // Turn off the flag so the click event can be added in the next round
+            this.$refs.mapContainer.startNextRound();
+        },
 
+        async goToNextRound() {
             if (this.isHost) {
                 await this.room.ref.child("round").set(this.round + 1);
-            } else {
-                // Trigger listener and load the next streetview
-                this.room
-                    .child(`trigger/${this.playerId}`)
-                    .set(this.round);
             }
-            this.$refs.mapContainer.startNextRound();
         },
         
         exitGame() {

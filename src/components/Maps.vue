@@ -116,6 +116,7 @@
             @click="selectLocation"
         >
             {{ $t('Maps.guess') }}
+            {{selectedPos == null}}
         </button>
         <button
             v-if="isNextButtonVisible"
@@ -237,7 +238,6 @@ export default {
     },
     computed: {
         isNextButtonEnabled() {
-            debugger;
             if (this.isHost || !this.room) {
                 return true;
             } else {
@@ -264,7 +264,11 @@ export default {
             this.room.on('value', (snapshot) => {
                 // Check if the room is already removed
                 if (snapshot.hasChild('active')) {
+                    const round = snapshot.child("round").val();
                     size = Object.values(snapshot.child('player').val()).filter(p => p.isOnline).length;
+                    
+                    const hasRoundEnded = Object.values(snapshot.child(`round${round}`).val() || {}).filter(v => v !== 0).length === size;
+
                     if (
                         // If Time Attack and 1st true guess finish round
                         (this.timeAttack &&
@@ -277,16 +281,16 @@ export default {
                                         guess.child('area').val() === this.area
                                 )) ||
                         // Allow players to move on to the next round when every players guess locations
-                        snapshot.child('guess').numChildren() === size && size > 0
+                        ((snapshot.child('guess').numChildren() === size && size > 0 || hasRoundEnded) && this.randomLatLng)
                     ) {
                         this.game.timeLimitation = this.timeLimitation;
-                        this.isNextStreetViewReady = false;
 
                         this.$emit('showResult');
 
                         // Put markers and draw polylines on the map
                         let i = 0;
                         let players = {};
+
                         snapshot.child('guess').forEach((childSnapshot) => {
                             let posGuess;
                             if (this.mode === GAME_MODE.CLASSIC) {
@@ -339,6 +343,7 @@ export default {
                             );
                             i++;
                         });
+
                         this.game.rounds.push({
                             position: {
                                 ...this.randomLatLng.toJSON(),
@@ -355,6 +360,8 @@ export default {
 
                         if (this.round >= this.nbRound) {
                             // Show summary button
+                            let results = [];
+                            
                             snapshot
                                 .child('finalPoints')
                                 .forEach((childSnapshot) => {
@@ -367,19 +374,20 @@ export default {
                                         .child(childSnapshot.key)
                                         .val();
                                     const finalPoints = childSnapshot.val();
-                                    this.summaryTexts.push({
+                                    results.push({
                                         playerName: playerName,
                                         finalScore: finalScore,
                                         finalPoints: finalPoints,
                                     });
                                 });
 
-                            this.summaryTexts.sort(
+                            results = results.sort(
                                 (a, b) =>
                                     parseInt(b.finalPoints) -
                                     parseInt(a.finalPoints)
                             );
-
+                            
+                            this.summaryTexts = results;
                             this.isSummaryButtonVisible = true;
                         } else {
                             // Show next button
@@ -389,8 +397,7 @@ export default {
 
                     // Allow other players to move on to the next round when the next street view is set=
                     if (
-                        snapshot.child('streetView').numChildren() ==
-                        this.round
+                        snapshot.child('streetView').numChildren() == round
                     ) {
                         this.isNextStreetViewReady = true;
                     }
@@ -531,14 +538,6 @@ export default {
         },
         startNextRound() {
             this.$refs.map.startNextRound();
-            this.startTime = new Date();
-        },
-        goToNextRound(isPlayAgain = false) {
-            if (isPlayAgain) {
-                this.dialogSummary = false;
-                this.isSummaryButtonVisible = false;
-            }
-
             // Reset
             this.selectedPos = null;
             this.isGuessButtonClicked = false;
@@ -546,6 +545,7 @@ export default {
             this.isNextButtonVisible = false;
             this.countdownStarted = false;
             this.isNotepadVisible = false;
+            this.isNextStreetViewReady = true;
 
             if (this.$viewport.width < 450) {
                 // Hide the map if the player is on mobile
@@ -556,7 +556,10 @@ export default {
             this.$refs.map.removeMarkers();
             this.$refs.map.removePolylines();
 
-            // Replace the streetview with the next one
+            this.startTime = new Date();
+            this.map && this.map.setZoom(4);
+        },
+        goToNextRound(isPlayAgain = false) {
             this.$emit('goToNextRound', isPlayAgain);
         },
         finishGame() {

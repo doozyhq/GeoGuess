@@ -1,5 +1,4 @@
 export const MapMixin = {
-   
     props: ['bbox'],
     watch: {
         bbox() {
@@ -16,10 +15,10 @@ export const MapMixin = {
                     west: this.bbox[0],
                 });
             }
-        },        
+        },
         drawPolyline() {},
         removePolylines() {},
-    }
+    },
 };
 
 export default MapMixin;
