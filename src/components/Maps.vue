@@ -32,9 +32,9 @@
 
         <div class="container-map_controls">
             <div class="container-map_btns">
-                <v-btn fab x-small @click="showNotepad">
+                <!-- <v-btn fab x-small @click="showNotepad">
                     <v-icon dark> mdi-file-document-edit </v-icon>
-                </v-btn>
+                </v-btn> -->
 
                 <v-btn
                     id="btnDown"
@@ -578,6 +578,7 @@ export default {
     --width: var(--inactive-width);
     max-width: 100%;
     max-height: calc(100% - 150px);
+    min-height: 150px;
     transition: 0.3s;
     #map {
         width: 100%;
@@ -625,6 +626,7 @@ export default {
             padding: 0.2rem;
             border-top-left-radius: 5%;
             border-top-right-radius: 5%;
+            width: 100%;
         }
         button {
             width: 1.5rem;
