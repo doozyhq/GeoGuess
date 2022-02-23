@@ -71,19 +71,8 @@ export default {
             state.room.once('value', (snapshot) => {
                 const playerId = (state.playerId =
                     firebase.auth().currentUser.uid);
-                // if (snapshot.child('started').val()) {
-                //     state.roomErrorMessage = i18n.t(
-                //         'DialogRoom.alreadyStarted'
-                //     );
-                //     state.room.off();
-                //     return;
-                // }
-
-                // debugger;
 
                 const numberOfPlayers = snapshot.child('player').numChildren();
-                // const playerNumber = numberOfPlayers + 1;
-
                 const name = state.name === '' ? randomAnimal : state.name;
 
                 if (numberOfPlayers === 0) {
@@ -122,8 +111,7 @@ export default {
                         state.room
                             .child(`player/${playerId}/isOnline`)
                             .onDisconnect()
-                            .set(false)
-                            .catch(console.error);
+                            .set(false);
 
                         // Put other player's tentative name
                         state.room.child(`player`).update(
@@ -205,7 +193,7 @@ export default {
     },
 
     actions: {
-        closeDialogRoom({ state, commit, dispatch }, cleanRoom = true) {
+        closeDialogRoom({ commit, dispatch }) {
             commit(MutationTypes.SETTINGS_SET_OPEN_DIALOG_ROOM, false);
             dispatch('setMapLoaded', new Map(), { root: true });
             commit(MutationTypes.SETTINGS_RESET);
