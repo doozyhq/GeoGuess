@@ -47,7 +47,7 @@ export default {
                 info = {
                     icon: {
                         url: window.location.origin + '/img/icons/map-pin.svg',
-                        anchor: new google.maps.Point(8,32),
+                        anchor: new google.maps.Point(4,25),
                     }
                 };
             }

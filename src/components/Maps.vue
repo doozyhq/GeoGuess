@@ -117,10 +117,9 @@
             @click="selectLocation"
         >
             {{ $t('Maps.guess') }}
-            {{selectedPos == null}}
         </button>
         <button
-            v-if="isNextButtonVisible"
+            v-if="isNextButtonEnabled"
             id="next-button"
             :disabled="!isNextButtonEnabled"
             :style="{
@@ -242,13 +241,8 @@ export default {
         isNextButtonEnabled() {
             if (this.isHost || !this.room) {
                 return true;
-            } else {
-                if (this.isNextStreetViewReady) {
-                    return true;
-                } else {
-                    return false;
-                }
             }
+            return false;
         },
     },
     async mounted() {
