@@ -119,7 +119,7 @@
             {{ $t('Maps.guess') }}
         </button>
         <button
-            v-if="isNextButtonEnabled"
+            v-if="isNextButtonEnabled && isNextButtonVisible"
             id="next-button"
             :disabled="!isNextButtonEnabled"
             :style="{

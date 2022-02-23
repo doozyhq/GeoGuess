@@ -11,7 +11,6 @@ import App from './App.vue';
 import i18n from './lang';
 import CountryNamePlugin from './plugins/countryNamePlugin';
 import vuetify from './plugins/vuetify';
-import './registerServiceWorker';
 import router from './router';
 import store from './store';
 
