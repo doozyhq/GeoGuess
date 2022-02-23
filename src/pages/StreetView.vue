@@ -277,8 +277,8 @@ export default {
                 this.playerName = snapshot.child('player').child(this.playerId).val().name || false;
 
                 snapshot.ref.child('player').child(this.playerId).child('isOnline').onDisconnect().set(false).then(() => {
-                    snapshot.ref.child('player').child(this.playerId).child('isOnline').set(true)
-                })
+                    snapshot.ref.child('player').child(this.playerId).child('isOnline').set(true);
+                });
             } else {
                 this.isHost = false;
                 this.playerName = null;
