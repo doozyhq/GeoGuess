@@ -45,8 +45,8 @@ export default {
             if (isRandomLocation) {
                 info = {
                     icon: {
-                        url: window.location.origin + '/img/icons/favicon-16x16.png',
-                        anchor: new google.maps.Point(8,8),
+                        url: window.location.origin + '/img/icons/map-pin.svg',
+                        anchor: new google.maps.Point(8,32),
                     }
                 };
             }

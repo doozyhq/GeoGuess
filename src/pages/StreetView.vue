@@ -310,7 +310,7 @@ export default {
                         .set(0);
                 }
 
-                // Other players load the streetview the first player loaded earlier
+                // Load the streetview when it's ready
                 if (snapshot.child(`streetView/round${this.round}`).exists() && this.round !== this.streetView) {
                     this.randomLat = snapshot
                         .child(
@@ -351,10 +351,8 @@ export default {
                         this.randomLat,
                         this.randomLng
                     );
-                    this.$refs.mapContainer.startNextRound();
                     this.resetLocation();
                     this.streetView = this.round;
-                    // Close the dialog when everyone is ready
                     this.dialogMessage = false;
                     this.dialogText = '';
 
@@ -373,17 +371,6 @@ export default {
                         }
                     }
                     this.resetLocation();
-                }
-
-                // Delete the room when everyone finished the game
-                if (
-                    snapshot.child('isGameDone').numChildren() ==
-                    snapshot.child('size').val()
-                ) {
-                    // this.resetLocation()
-                    // this.room.child('active').remove();
-                    // this.room.off();
-                    // this.room.remove();
                 }
 
                 if (this.isHost && !snapshot.child("streetView").child('round' + this.round).exists() && isNewRound) {
@@ -552,32 +539,27 @@ export default {
                         }
                         this.area = areaCode;
 
-                        if (this.multiplayer) {
-                            // Put the streetview's location into firebase
-                            this.room
-                                .child('streetView/round' + this.round)
-                                .set({
-                                    latitude: this.randomLatLng.lat(),
-                                    longitude: this.randomLatLng.lng(),
-                                    roundInfo:
-                                        this.randomFeatureProperties || null,
-                                    area: areaCode,
-                                    warning: this.isVisibleDialog,
-                                });
-                        }
+                        // Put the streetview's location into firebase
+                        this.room
+                            .child('streetView/round' + this.round)
+                            .set({
+                                latitude: this.randomLatLng.lat(),
+                                longitude: this.randomLatLng.lng(),
+                                roundInfo:
+                                    this.randomFeatureProperties || null,
+                                area: areaCode,
+                                warning: this.isVisibleDialog,
+                            });
                     } else {
-                        if (this.multiplayer) {
-                            // Put the streetview's location into firebase
-                            this.room
-                                .child('streetView/round' + this.round)
-                                .set({
-                                    latitude: this.randomLatLng.lat(),
-                                    longitude: this.randomLatLng.lng(),
-                                    roundInfo:
-                                        this.randomFeatureProperties || null,
-                                    warning: this.isVisibleDialog,
-                                });
-                        }
+                        this.room
+                            .child('streetView/round' + this.round)
+                            .set({
+                                latitude: this.randomLatLng.lat(),
+                                longitude: this.randomLatLng.lng(),
+                                roundInfo:
+                                    this.randomFeatureProperties || null,
+                                warning: this.isVisibleDialog,
+                            });
                     }
                 }
             } else {
@@ -645,8 +627,9 @@ export default {
                 }
             }, 50);
 
-            if(data && data.location)
+            if(data && data.location) {
                 this.panorama.setPano(data.location.pano);
+            }
             this.panorama.setPov({
                 heading: 270,
                 pitch: 0,

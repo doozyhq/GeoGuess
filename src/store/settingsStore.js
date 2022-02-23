@@ -50,7 +50,7 @@ export default {
         // SETTINGS
         gameSettings: new GameSettings(),
         players: [],
-        name: localStorage.getItem('playerName') || '',
+        name: localStorage.getItem('playerName') || randomAnimal,
         invalidName: false,
         playerId: null,
     }),
@@ -86,12 +86,6 @@ export default {
 
                 const name = state.name === '' ? randomAnimal : state.name;
 
-                // state.room
-                //     .child(`player/${playerId}`)
-                //     .onDisconnect()
-                //     .remove()
-                //     .catch(console.error);
-
                 if (numberOfPlayers === 0) {
                     // Put the tentative player's name into the room node
                     // So that other player can't enter as the first player while the player decide the name and room size
@@ -99,6 +93,7 @@ export default {
                         {
                             [`${playerId}/name`]: name,
                             [`${playerId}/isHost`]: true,
+                            [`${playerId}/isOnline`]: true,
                         },
                         (error) => {
                             if (!error) {
@@ -124,15 +119,25 @@ export default {
                             state.currentComponent = 'playerName';
                         }
                     } else {
-                        // Put other player's tentative name
                         state.room
-                            .child(`player`)
-                            .update({ [`${playerId}/name`]: name }, (error) => {
+                            .child(`player/${playerId}/isOnline`)
+                            .onDisconnect()
+                            .set(false)
+                            .catch(console.error);
+
+                        // Put other player's tentative name
+                        state.room.child(`player`).update(
+                            {
+                                [`${playerId}/name`]: name,
+                                [`${playerId}/isOnline`]: true,
+                            },
+                            (error) => {
                                 if (!error) {
                                     state.loadRoom = false;
                                     state.currentComponent = 'playerName';
                                 }
-                            });
+                            }
+                        );
                     }
                 }
             });
@@ -202,22 +207,6 @@ export default {
     actions: {
         closeDialogRoom({ state, commit, dispatch }, cleanRoom = true) {
             commit(MutationTypes.SETTINGS_SET_OPEN_DIALOG_ROOM, false);
-
-            // Remove the room
-            if (state.room != null) {
-                state.room.off();
-                if (cleanRoom) {
-                    // if (state.playerNumber === 1) {
-                    //     // Remove the entire node if the player is the first player
-                    //     state.room.remove();
-                    // } else {
-                    //     const playerId = firebase.auth().currentUser.uid;
-                    //     // Remove only the player's name node if the player isn't the first player
-                    //     state.room.child(`playerName/${playerId}`).remove();
-                    // }
-                }
-            }
-
             dispatch('setMapLoaded', new Map(), { root: true });
             commit(MutationTypes.SETTINGS_RESET);
         },

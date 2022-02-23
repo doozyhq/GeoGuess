@@ -237,6 +237,7 @@ export default {
     },
     computed: {
         isNextButtonEnabled() {
+            debugger;
             if (this.isHost || !this.room) {
                 return true;
             } else {
@@ -264,11 +265,6 @@ export default {
                 // Check if the room is already removed
                 if (snapshot.hasChild('active')) {
                     size = Object.values(snapshot.child('player').val()).filter(p => p.isOnline).length;
-                    // if (size === 1) {
-                    //     this.room.onDisconnect().remove();
-                    // } else {
-                    //     this.room.onDisconnect().update({ size: size - 1 });
-                    // }
                     if (
                         // If Time Attack and 1st true guess finish round
                         (this.timeAttack &&
@@ -281,7 +277,7 @@ export default {
                                         guess.child('area').val() === this.area
                                 )) ||
                         // Allow players to move on to the next round when every players guess locations
-                        snapshot.child('guess').numChildren() === size
+                        snapshot.child('guess').numChildren() === size && size > 0
                     ) {
                         this.game.timeLimitation = this.timeLimitation;
                         this.isNextStreetViewReady = false;
