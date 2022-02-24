@@ -254,7 +254,7 @@ export default {
         let size = 0;
 
         if (this.roomName) {
-            this.room = firebase.database().ref(this.roomName);
+            this.room = firebase.database().ref(`rooms/${this.roomName}`);
 
             this.room.on('value', (snapshot) => {
                 // Check if the room is already removed

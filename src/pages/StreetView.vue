@@ -271,7 +271,7 @@ export default {
             this.$refs.streetView
         );
 
-        this.room = firebase.database().ref(this.roomName);
+        this.room = firebase.database().ref(`rooms/${this.roomName}`);
         this.room.child('active').set(true);
         this.room.on('value', async (snapshot) => {
             this.playerId = firebase.auth().currentUser && firebase.auth().currentUser.uid || null;

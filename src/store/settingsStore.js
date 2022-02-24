@@ -47,6 +47,7 @@ export default {
         roomName: '',
         roomErrorMessage: null,
         isHost: false,
+        isStarting: false,
         // SETTINGS
         gameSettings: new GameSettings(),
         players: [],
@@ -56,7 +57,7 @@ export default {
     }),
     mutations: {
         [MutationTypes.SETTINGS_SET_ROOM](state, roomName) {
-            state.room = firebase.database().ref(roomName);
+            state.room = firebase.database().ref(`rooms/${roomName}`);
             state.roomName = roomName;
             state.playerId =
                 (firebase.auth().currentUser &&
@@ -149,6 +150,9 @@ export default {
         [MutationTypes.SETTINGS_SET_DIFFICULTY](state, difficulty) {
             state.difficulty = difficulty;
         },
+        [MutationTypes.SETTINGS_IS_STARTING_GAME](state, isStarting) {
+            state.isStarting = isStarting;
+        },
         [MutationTypes.SETTINGS_SET_BBOX](state, bbox) {
             state.bboxObj = bbox;
         },
@@ -222,15 +226,6 @@ export default {
                         .filter((p) => p.isOnline)
                         .map((p) => p.name);
 
-                if (
-                    state.currentComponent === 'playerName' &&
-                    !state.isHost &&
-                    snapshot.hasChild('size') &&
-                    snapshot.hasChild('streetView')
-                ) {
-                    dispatch('startGame');
-                }
-
                 // User is already registered and game is running. autojoin.
                 if (
                     snapshot.child('active').val() === true &&
@@ -292,8 +287,14 @@ export default {
                 commit(MutationTypes.SETTINGS_SET_PLAYER_NAME, playerName);
             }
         },
-        startGame({ state, dispatch, rootState }) {
+        startGame({ state, dispatch, rootState, commit }) {
             let gameParams = {};
+
+            if (state.isStarting) {
+                return;
+            }
+
+            commit(MutationTypes.SETTINGS_IS_STARTING_GAME, true);
             if (state.isHost) {
                 gameParams = {
                     ...state.gameSettings,
