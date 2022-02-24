@@ -668,7 +668,6 @@ export default {
                 } else {
                     setTimeout(() => {
                         this.timerInProgress = false;
-                        debugger;
                         if (!this.hasLocationSelected) {
                             if (
                                 [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
