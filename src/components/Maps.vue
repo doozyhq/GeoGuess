@@ -261,9 +261,12 @@ export default {
                 if (snapshot.hasChild('active')) {
                     const round = snapshot.child("round").val();
                     const nbRound = snapshot.child("nbRound").val() || this.nbRound;
-                    size = Object.values(snapshot.child('player').val()).filter(p => p.isOnline).length;
-                    
-                    const hasRoundEnded = Object.values(snapshot.child(`round${round}`).val() || {}).filter(v => v !== 0).length === size;
+
+                    const answeredIds = Object.entries(snapshot.child(`round${round}`).val() || {}).filter(([, v]) => v !== 0).map(([k]) => k);
+                    const activeUsers = Object.entries(snapshot.child('player').val() || {}).filter(([, p]) => p.isOnline).map(([k]) => k);
+                    const guesses = Object.keys(snapshot.child('guess').val() || {});
+
+                    debugger;
 
                     if (
                         // If Time Attack and 1st true guess finish round
@@ -277,7 +280,7 @@ export default {
                                         guess.child('area').val() === this.area
                                 )) ||
                         // Allow players to move on to the next round when every players guess locations
-                        ((snapshot.child('guess').numChildren() === size && size > 0 || hasRoundEnded) && this.randomLatLng)
+                        ((hasEveryoneAnswered(guesses, activeUsers) || hasEveryoneAnswered(answeredIds, activeUsers)) && this.randomLatLng && activeUsers.length > 0)
                     ) {
                         this.game.timeLimitation = this.timeLimitation;
 
@@ -555,7 +558,12 @@ export default {
         }
     },
 };
+
+const hasEveryoneAnswered = (answeredIds, activeUsers) => {
+    return activeUsers.every(id => answeredIds.includes(id));
+};
 </script>
+
 
 <style scoped lang="scss">
 #container-map {

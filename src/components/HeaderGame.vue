@@ -8,7 +8,7 @@
             <div v-else>
                 <span id="countdown-text">{{ timerText }}</span>
             </div>
-            <div class="flex-grow-1" />
+
             <div class="round-score-container">
                 <span class="sub-text">{{ $t('HeaderGame.round') }}: </span>
                 <span id="roundLabel" class="main-text">
