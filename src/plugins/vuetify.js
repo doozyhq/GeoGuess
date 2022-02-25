@@ -13,11 +13,12 @@ import it from 'vuetify/es5/locale/it';
 import Vuetify from 'vuetify/lib';
 import { checkLanguage, languages, RTL_LANGUAGES } from '../lang';
 import '../scss/variables.scss';
+import { getItem } from '../localstorage';
 
 Vue.use(Vuetify);
 const currentLanguage =
-    localStorage.getItem('language') != null
-        ? localStorage.getItem('language')
+    getItem('language') != null
+        ? getItem('language')
         : languages.map((l) => l.value).some(checkLanguage)
         ? navigator.language.split('-')[0]
         : 'en';

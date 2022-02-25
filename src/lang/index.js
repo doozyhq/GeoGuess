@@ -12,6 +12,7 @@ import ru from './locale/ru.json';
 import sv from './locale/sv.json';
 import tr from './locale/tr.json';
 import it from './locale/it.json';
+import { getItem, setItem } from '../localstorage';
 
 Vue.use(VueI18n);
 
@@ -68,8 +69,8 @@ export function checkLanguage(language) {
     return navigator.language.split('-')[0] === language.value;
 }
 
-if (!localStorage.getItem('language')) {
-    localStorage.setItem(
+if (!getItem('language')) {
+    setItem(
         'language',
         languages.some(checkLanguage) ? navigator.language.split('-')[0] : 'en'
     );
@@ -77,8 +78,8 @@ if (!localStorage.getItem('language')) {
 
 export default new VueI18n({
     locale:
-        localStorage.getItem('language') != null
-            ? localStorage.getItem('language')
+        getItem('language') != null
+            ? getItem('language')
             : languages.some(checkLanguage)
             ? navigator.language.split('-')[0]
             : 'en',

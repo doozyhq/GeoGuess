@@ -77,6 +77,7 @@ import About from '@/components/page/About';
 import { languages, RTL_LANGUAGES } from '../../lang';
 import { mapActions, mapState } from 'vuex';
 import HeaderAlert from './HeaderAlert.vue';
+import { setItem } from '../../localstorage';
 
 export default {
     components: {
@@ -110,7 +111,7 @@ export default {
             this.saveLanguage(language);
         },
         saveLanguage(language) {
-            localStorage.setItem('language', language);
+            setItem('language', language);
         },
     },
 };

@@ -82,6 +82,7 @@
 
 <script>
 import { GAME_MODE } from '../constants';
+import { getItem, setItem } from '../localstorage';
 export default {
     props: [
         'dialogSummary',
@@ -108,7 +109,7 @@ export default {
     },
     methods: {
         updateRecord() {
-            let history = localStorage.getItem('history');
+            let history = getItem('history');
             if (history == null) {
                 history = [];
             } else {
@@ -125,7 +126,7 @@ export default {
                     : undefined,
                 mapDetails: this.mapDetails
             });
-            localStorage.setItem('history', JSON.stringify(history));
+            setItem('history', JSON.stringify(history));
         },
         finishGame() {
             this.$emit('finishGame');

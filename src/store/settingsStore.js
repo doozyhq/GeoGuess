@@ -6,6 +6,7 @@ import i18n from '../lang';
 import router from '../router';
 import { getMaxDistanceBbox } from '../utils';
 import * as MutationTypes from './mutation-types';
+import { getItem, setItem } from '../localstorage';
 
 export class GameSettings {
     constructor(
@@ -51,7 +52,7 @@ export default {
         // SETTINGS
         gameSettings: new GameSettings(),
         players: [],
-        name: localStorage.getItem('playerName') || randomAnimal,
+        name: getItem('playerName') || randomAnimal,
         invalidName: false,
         playerId: null,
     }),
@@ -283,7 +284,7 @@ export default {
             if (playerName === '') {
                 commit(MutationTypes.SETTINGS_SET_PLAYER_NAME, randomAnimal);
             } else {
-                localStorage.setItem('playerName', playerName);
+                setItem('playerName', playerName);
                 commit(MutationTypes.SETTINGS_SET_PLAYER_NAME, playerName);
             }
         },

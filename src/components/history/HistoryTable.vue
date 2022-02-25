@@ -119,6 +119,7 @@ import { download } from '../../utils';
 import HistoryMapClassic from './gameResult/HistoryMapClassic';
 import HistoryMapArea from './gameResult/HistoryMapArea';
 import HistoryTimeDetail from './gameResult/HistoryTimeDetail';
+import { setItem } from '../../localstorage';
 export default {
     name: 'HistoryTable',
     components: {
@@ -310,7 +311,7 @@ export default {
                 );
                 this.history = this.history.concat(historyFileFilter);
 
-                localStorage.setItem('history', JSON.stringify(this.history));
+                setItem('history', JSON.stringify(this.history));
             });
         },
         exportCsv() {
