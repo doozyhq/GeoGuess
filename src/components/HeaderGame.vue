@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-app-bar class="header-game" color="grey darken-4">
+        <div class="header-game" color="grey darken-4">
             <div v-if="remainingTime != null && remainingTime > 0">
                 <span id="countdown-text">{{ countdownText }}</span>
             </div>
@@ -35,7 +35,7 @@
     
                 <span class="main-text">{{ players }}</span>
             </div>
-        </v-app-bar>
+        </div>
     </div>
 </template>
 
@@ -104,6 +104,13 @@ export default {
 .header-game {
     z-index: 3;
     opacity: 0.8;
+    background: #212121;
+    display:flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
 }
 
 .toolbar-title {
