@@ -12,6 +12,8 @@ import i18n from './lang';
 import CountryNamePlugin from './plugins/countryNamePlugin';
 import vuetify from './plugins/vuetify';
 import router from './router';
+import * as Sentry from '@sentry/vue';
+import { BrowserTracing } from '@sentry/tracing';
 import store from './store';
 
 Vue.use(VueAxios, axios);
@@ -26,6 +28,22 @@ Vue.use(GmapVue, {
     },
 });
 Vue.config.productionTip = false;
+
+Sentry.init({
+    Vue,
+    dsn: 'https://a70cbbc9625f4b7aa668a9ef8e1fa665@o389713.ingest.sentry.io/6235729',
+    integrations: [
+        new BrowserTracing({
+            routingInstrumentation: Sentry.vueRouterInstrumentation(router),
+            tracingOrigins: ['localhost', 'geo-guess-game.doozy.live', /^\//],
+        }),
+    ],
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+    logErrors: true,
+});
 
 const updateSizes = (obj = {}) => {
     obj.width = window.innerWidth;
