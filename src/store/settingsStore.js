@@ -64,6 +64,7 @@ export default {
                 (firebase.auth().currentUser &&
                     firebase.auth().currentUser.uid) ||
                 null;
+            state.isHost = false;
             // Open Modal
             if (!state.isOpenDialogRoom) {
                 state.loadRoom = true;
@@ -74,10 +75,16 @@ export default {
                 const playerId = (state.playerId =
                     firebase.auth().currentUser.uid);
 
-                const numberOfPlayers = snapshot.child('player').numChildren();
                 const name = state.name === '' ? randomAnimal : state.name;
+                const qp = new URLSearchParams(window.location.search);
+                const allowHost =
+                    !qp.get('is_host') || qp.get('is_host') === 'true';
 
-                if (numberOfPlayers === 0) {
+                const isThereAHost = (
+                    Object.values(snapshot.child('player').val() || {}) || []
+                ).find((p) => p.isHost);
+
+                if (!isThereAHost && allowHost) {
                     // Put the tentative player's name into the room node
                     // So that other player can't enter as the first player while the player decide the name and room size
                     state.room.child('player').update(
@@ -104,11 +111,21 @@ export default {
                     if (player && player[playerId]) {
                         state.isHost = player[playerId].isHost || false;
                         state.loadRoom = false;
-                        if (state.isHost) {
-                            state.currentComponent = 'settingsMap';
-                        } else {
-                            state.currentComponent = 'playerName';
-                        }
+                        // Put other player's tentative name
+                        state.room.child(`player`).update(
+                            {
+                                [`${playerId}/isOnline`]: true,
+                            },
+                            (error) => {
+                                if (!error) {
+                                    if (state.isHost) {
+                                        state.currentComponent = 'settingsMap';
+                                    } else {
+                                        state.currentComponent = 'playerName';
+                                    }
+                                }
+                            }
+                        );
                     } else {
                         state.room
                             .child(`player/${playerId}/isOnline`)
@@ -300,14 +317,17 @@ export default {
                 gameParams = {
                     ...state.gameSettings,
                     difficulty: state.difficulty,
-                    placeGeoJson: rootState.homeStore.map.geojson,
-                    bboxObj: state.bboxObj,
                     isHost: true,
                 };
                 // Set flag started
                 state.room.update({
                     size: state.players.length,
                     started: true,
+                    difficulty: state.difficulty,
+                    placeGeoJson: JSON.stringify(
+                        rootState.homeStore.map.geojson
+                    ),
+                    bboxObj: JSON.stringify(state.bboxObj || null),
                 });
                 dispatch('startGameMultiplayer', gameParams);
             } else {
@@ -332,7 +352,7 @@ export default {
                 });
             }
         },
-        startGameMultiplayer({ state, rootState, dispatch }, gameParams) {
+        startGameMultiplayer({ state, dispatch }, gameParams) {
             // Start the game
             router.push({
                 name: 'with-friends',
@@ -341,7 +361,6 @@ export default {
                     roomName: state.roomName,
                     playerName: state.name,
                     playerId: state.playerId,
-                    placeGeoJson: rootState.homeStore.map.geojson,
                     multiplayer: true,
                 },
             });

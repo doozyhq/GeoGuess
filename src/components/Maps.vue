@@ -535,7 +535,9 @@ export default {
             this.$refs.map.removeMarkers();
             this.$refs.map.removePolylines();
 
-            this.$refs.map.setZoom(2);
+            if (this.$refs.map.setZoom) {
+                this.$refs.map.setZoom(2);
+            }
             this.$refs.map.startNextRound();
             this.enableClick = true;
         },

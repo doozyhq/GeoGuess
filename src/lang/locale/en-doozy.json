@@ -138,7 +138,8 @@
         "title": "Joining Geo Guess!",
         "input": "What's your name?",
         "anonymousPlayerName": "Anonymous 🕵",
-        "players": "1 player | {count} players"
+        "players": "1 player | {count} players",
+        "waitingForHostToStart": "Waiting for host to start..."
     },
     "CardRoomSize": { "title": "Set a room size." },
     "CardRoomTime": {

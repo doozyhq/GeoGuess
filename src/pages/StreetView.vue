@@ -150,10 +150,6 @@ export default {
         //     type: String,
         //     default: null
         // },
-        placeGeoJson: {
-            default: null,
-            type: Object,
-        },
         multiplayer: {
             default: false,
             type: Boolean,
@@ -165,10 +161,6 @@ export default {
         difficulty: {
             default: 2000,
             type: Number,
-        },
-        bboxObj: {
-            default: null,
-            type: Array,
         },
         roundsPredefined: {
             default: null,
@@ -246,6 +238,8 @@ export default {
             isHost: false,
             playerName: "",
             startTime: null,
+            placeGeoJson: null,
+            bboxObj: null,
 
             difficultyData: this.difficulty,
             bbox: this.bboxObj,
@@ -287,6 +281,17 @@ export default {
                 this.isHost = false;
                 this.playerName = null;
             }
+
+            if (!this.placeGeoJson && snapshot.child("placeGeoJson").exists()) {
+                this.placeGeoJson = JSON.parse(snapshot.child("placeGeoJson").val());
+            }
+
+            if (!this.bboxObj && !snapshot.child("bboxObj").exists()) {
+                this.bboxObj = JSON.parse(snapshot.child("bboxObj").val());
+                this.bbox = this.bboxObj;
+            }
+
+
             this.isLoading = false; 
             if (snapshot.child("nbRound").exists()) {
                 this.nbRound = snapshot.child("nbRound").val();
@@ -367,7 +372,7 @@ export default {
                         .child('timeLimitation')
                         .val();
 
-                    if (this.timeLimitation != 0) {
+                    if (this.timeLimitation) {
                         if (!this.hasTimerStarted) {
                             this.initTimer(this.timeLimitation,this.startTime);
                             this.hasTimerStarted = true;

@@ -167,10 +167,14 @@ export default {
             this.map.fitBounds(bounds);
         },
         getZoom() {
-            return this.map.getZoom();
+            if (this.map) {
+                return this.map.getZoom();
+            }
         },
         setZoom(zoom) {
-            return this.map.setZoom(zoom);
+            if (this.map) {
+                return this.map.setZoom(zoom);
+            }
         }
     },
 };

@@ -19,13 +19,14 @@
                     <span>{{ dialogText }}</span>
                 </v-container>
             </v-card-text>
+            <v-btn v-if="this.showButton === 'classic'" @click="this.onClickButton">{{ buttonText }}</v-btn>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
 export default {
-    props: ['dialogMessage', 'dialogTitle', 'dialogText'],
+    props: ['dialogMessage', 'dialogTitle', 'dialogText', 'showButton', 'onClickButton', 'buttonText'],
 };
 </script>
 
