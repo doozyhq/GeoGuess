@@ -264,6 +264,8 @@ export default {
                     const answeredIds = Object.entries(snapshot.child(`round${round}`).val() || {}).filter(([, v]) => v !== 0).map(([k]) => k);
                     const activeUsers = Object.entries(snapshot.child('player').val() || {}).filter(([, p]) => p.isOnline).map(([k]) => k);
                     const guesses = Object.keys(snapshot.child('guess').val() || {});
+                    const allGuessed = hasEveryoneAnswered(guesses, activeUsers)
+                    const allAnswered = hasEveryoneAnswered(answeredIds, activeUsers)
 
                     if (
                         // If Time Attack and 1st true guess finish round
@@ -277,7 +279,7 @@ export default {
                                         guess.child('area').val() === this.area
                                 )) ||
                         // Allow players to move on to the next round when every players guess locations
-                        ((hasEveryoneAnswered(guesses, activeUsers) || hasEveryoneAnswered(answeredIds, activeUsers)) && this.randomLatLng && activeUsers.length > 0)
+                        (( allGuessed|| allAnswered ) && this.randomLatLng && activeUsers.length > 0)
                     ) {
                         this.game.timeLimitation = this.timeLimitation;
 

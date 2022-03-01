@@ -168,7 +168,7 @@ export default {
                     ? `https://nominatim.openstreetmap.org/lookup?osm_ids=R${osmId}&format=geojson&polygon_geojson=1&accept-language=en`
                     : `https://nominatim.openstreetmap.org/search/${encodeURIComponent(
                           place.toLowerCase()
-                      )}?format=geojson&limit=1&polygon_geojson=1`;
+                      )}?format=geojson&limit=5&polygon_geojson=1`;
                 // TODO : add &accept-language=en
                 return axios
                     .get(url)
@@ -178,16 +178,22 @@ export default {
                             res.status === 200 &&
                             res.data.features.length > 0
                         ) {
-                            let feature = res.data.features[0];
-                            const map = new GeoMapOSM(
-                                feature.properties.display_name,
-                                feature.properties.osm_id,
-                                feature.properties.osm_type,
-                                feature
+                            let feature = res.data.features.find(
+                                (f) =>
+                                    f.geometry.type === 'Polygon' ||
+                                    f.geometry.type === 'MultiPolygon'
                             );
-                            commit(MutationTypes.HOME_SET_MAP, map);
+                            if (feature) {
+                                const map = new GeoMapOSM(
+                                    feature.properties.display_name,
+                                    feature.properties.osm_id,
+                                    feature.properties.osm_type,
+                                    feature
+                                );
+                                commit(MutationTypes.HOME_SET_MAP, map);
 
-                            return;
+                                return;
+                            }
                         }
                         commit(
                             MutationTypes.HOME_SET_GEOJSON_ERROR,
