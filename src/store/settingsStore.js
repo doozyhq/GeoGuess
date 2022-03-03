@@ -80,6 +80,8 @@ export default {
                 const allowHost =
                     !qp.get('is_host') || qp.get('is_host') === 'true';
 
+                const ref = snapshot.ref;
+
                 const isThereAHost = (
                     Object.values(snapshot.child('player').val() || {}) || []
                 ).find((p) => p.isHost);
@@ -87,7 +89,7 @@ export default {
                 if (!isThereAHost && allowHost) {
                     // Put the tentative player's name into the room node
                     // So that other player can't enter as the first player while the player decide the name and room size
-                    state.room.child('player').update(
+                    ref.child('player').update(
                         {
                             [`${playerId}/name`]: name,
                             [`${playerId}/isHost`]: true,
@@ -96,7 +98,7 @@ export default {
                         (error) => {
                             if (!error) {
                                 // Put the timestamp the room is created so the expired rooms can be removed by cloud function
-                                state.room.update({
+                                ref.update({
                                     createdAt:
                                         firebase.database.ServerValue.TIMESTAMP,
                                 });
@@ -112,7 +114,7 @@ export default {
                         state.isHost = player[playerId].isHost || false;
                         state.loadRoom = false;
                         // Put other player's tentative name
-                        state.room.child(`player`).update(
+                        ref.child(`player`).update(
                             {
                                 [`${playerId}/isOnline`]: true,
                             },
@@ -133,7 +135,7 @@ export default {
                             .set(false);
 
                         // Put other player's tentative name
-                        state.room.child(`player`).update(
+                        ref.child(`player`).update(
                             {
                                 [`${playerId}/name`]: name,
                                 [`${playerId}/isOnline`]: true,
