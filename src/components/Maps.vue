@@ -264,8 +264,8 @@ export default {
                     const answeredIds = Object.entries(snapshot.child(`round${round}`).val() || {}).filter(([, v]) => v !== 0).map(([k]) => k);
                     const activeUsers = Object.entries(snapshot.child('player').val() || {}).filter(([, p]) => p.isOnline).map(([k]) => k);
                     const guesses = Object.keys(snapshot.child('guess').val() || {});
-                    const allGuessed = hasEveryoneAnswered(guesses, activeUsers)
-                    const allAnswered = hasEveryoneAnswered(answeredIds, activeUsers)
+                    const allGuessed = hasEveryoneAnswered(guesses, activeUsers);
+                    const allAnswered = hasEveryoneAnswered(answeredIds, activeUsers);
 
                     if (
                         // If Time Attack and 1st true guess finish round
