@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="header-game" color="grey darken-4">
-            <div v-if="remainingTime != null && remainingTime > 0">
+            <div v-if="remainingTime != null">
                 <span id="countdown-text">{{ countdownText }}</span>
             </div>
 
@@ -67,9 +67,6 @@ export default {
         };
     },
     watch: {
-        round: function () {
-            this.startTimer();
-        },
     },
     computed: {
         ...mapState({
@@ -83,25 +80,8 @@ export default {
         },
     },
     mounted() {
-        this.startTimer();
     },
     methods: {
-        startTimer() {
-            if (this.remainingTime != 0) {
-                return;
-            }
-
-            this.intervalFunction = setInterval(() => {
-                this.timerText = getCountdownText(
-                    Math.round((Date.now() - this.startTime) / 1000)
-                );
-            }, 1000);
-        },
-        stopTimer() {
-            if (this.intervalFunction) {
-                clearInterval(this.intervalFunction);
-            }
-        },
     },
 };
 </script>

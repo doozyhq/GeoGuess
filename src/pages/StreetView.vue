@@ -208,6 +208,7 @@ export default {
     data() {
         return {
             area: null,
+            results: [],
             randomLatLng: null,
             randomLat: null,
             randomLng: null,
@@ -223,6 +224,7 @@ export default {
             timeAttack: this.timeAttackSelected,
             nbRound: this.nbRound || this.timeAttackSelected ? 10 : 5,
             remainingTime: 0,
+            timerInstance:false,
             endTime: null,
             hasTimerStarted: false,
             hasLocationSelected: false,
@@ -697,17 +699,21 @@ export default {
         },
         startTimer(round = this.round) {
             if (round === this.round) {
+                this.stopTimer();
                 this.remainingTime = Math.max(
                     0,
                     Math.round((this.endTime - Date.now()) / 1000)
                 );
-                if (this.remainingTime > 0) {
-                    setTimeout(() => {
-                        this.startTimer(round);
-                    }, 1000);
-                } else {
-                    setTimeout(() => {
-                        this.timerInProgress = false;
+                
+                this.timerInstance = setInterval(() => {
+                    if (this.remainingTime > 0) {
+                        this.remainingTime = Math.max(
+                            0,
+                            Math.round((this.endTime - Date.now()) / 1000)
+                        );
+                    } else {
+                        this.stopTimer(); 
+                        
                         if (!this.hasLocationSelected) {
                             if (
                                 [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
@@ -729,16 +735,18 @@ export default {
                                 );
                             }
                         }
-                    }, 1000);
-                }
+                    }
+                }, 1000);
+            }
+        },
+        stopTimer(round = this.round) {
+            if (round === this.round && this.timerInstance) {
+                clearInterval(this.timerInstance);
             }
         },
         updateScore(distance, points) {
             // Update the score and save it into firebase
             this.hasLocationSelected = true;
-            if (!this.multiplayer) {
-                this.remainingTime = 0;
-            }
             this.score += distance;
             this.points += points;
 
@@ -756,11 +764,10 @@ export default {
         showResult() {
             this.scoreHeader = this.score; // Update the score on header after every players guess locations
             this.pointsHeader = this.points;
-            this.remainingTime = 0;
             this.dialogMessage = false;
             this.isVisibleCountdownAlert = false;
             this.overlay = true;
-            this.$refs.header.stopTimer();
+            this.stopTimer();
         },
         startNextRound(playAgain = false) {
             if (playAgain) {
@@ -776,6 +783,7 @@ export default {
             this.area = null;
             this.overlay = false;
             this.hasTimerStarted = false;
+            this.timerInstance = true;
             this.hasLocationSelected = false;
             this.isVisibleDialog = false;
             this.randomFeatureProperties = null;
