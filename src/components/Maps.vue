@@ -518,7 +518,7 @@ export default {
   
         goToNextRound:  _.debounce(function() {
             this.$emit('goToNextRound', this.round + 1);
-        }, 1000, {
+        }, 5000, {
             leading: true,
             trailing: false,
         }),
