@@ -150,7 +150,7 @@
         </button></div>
         <DialogSummary
             :dialog-summary="dialogSummary"
-            :summary-texts="summaryTexts"
+            :summary-texts="this.results"
             :score="score"
             :player-name="playerName"
             :points="points"
@@ -206,11 +206,11 @@ export default {
         'pathKey',
         'mapDetails',
         'isHost',
-        'startTime'
+        'startTime',
+        'results'
     ],
     data() {
         return {
-            summaryTexts: [],
             room: null,
             selectedPos: null,
             distance: null,
@@ -233,7 +233,8 @@ export default {
                 date: new Date(),
                 rounds: [],
             },
-            enableClick: false
+            enableClick: false,
+            rank: null
         };
     },
     computed: {
@@ -266,7 +267,7 @@ export default {
                     const guesses = Object.keys(snapshot.child('guess').val() || {});
                     const allGuessed = hasEveryoneAnswered(guesses, activeUsers);
                     const allAnswered = hasEveryoneAnswered(answeredIds, activeUsers);
-
+                    
                     if (
                         // If Time Attack and 1st true guess finish round
                         (this.timeAttack &&
@@ -279,7 +280,7 @@ export default {
                                         guess.child('area').val() === this.area
                                 )) ||
                         // Allow players to move on to the next round when every players guess locations
-                        (( allGuessed|| allAnswered ) && this.randomLatLng && activeUsers.length > 0)
+                        (( allGuessed || allAnswered ) && this.randomLatLng && activeUsers.length > 0)
                     ) {
                         this.game.timeLimitation = this.timeLimitation;
 
@@ -371,41 +372,11 @@ export default {
                         this.room.child('guess').remove();
 
                         if (round >= nbRound) {
-                            // Show summary button
-                            let results = [];
-                            
-                            snapshot
-                                .child('finalPoints')
-                                .forEach((childSnapshot) => {
-                                    const playerName = snapshot
-                                        .child('player')
-                                        .child(childSnapshot.key)
-                                        .val().name;
-                                    const finalScore = snapshot
-                                        .child('finalScore')
-                                        .child(childSnapshot.key)
-                                        .val();
-                                    const finalPoints = childSnapshot.val();
-                                    results.push({
-                                        playerName: playerName,
-                                        finalScore: finalScore,
-                                        finalPoints: finalPoints,
-                                    });
-                                });
-
-                            results = results.sort(
-                                (a, b) =>
-                                    parseInt(b.finalPoints) -
-                                    parseInt(a.finalPoints)
-                            );
-                            
-                            this.summaryTexts = results;
                             this.isSummaryButtonVisible = true;
                             this.isNextButtonVisible = true;
                         } else {
                             // Show next button
                             this.isNextButtonVisible = true;
-                            this.summaryTexts = [];
                             this.isSummaryButtonVisible = false;
                         }
                     }

@@ -86,7 +86,8 @@
         "distance": "DISTANCE",
         "kmaway": "{value} km away",
         "score": "SCORE",
-        "players": "PLAYERS"
+        "players": "PLAYERS",
+        "position": "POSITION"
     },
     "next": "NEXT",
     "cancel": "CANCEL",

@@ -11,7 +11,7 @@ import { getItem, setItem } from '../localstorage';
 export class GameSettings {
     constructor(
         _allPanorama = false,
-        _timeLimitation = 0,
+        _timeLimitation = 120,
         _mode = GAME_MODE.CLASSIC,
         _timeAttack = false,
         _zoomControl = true,

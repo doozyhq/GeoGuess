@@ -12,6 +12,7 @@
                 :mode="mode"
                 :start-time="startTime"
                 :players="players"
+                :position="rank"
             />
 
             <div id="game-interface">
@@ -58,6 +59,7 @@
                         "
                         :mapDetails="mapDetails"
                         :start-time="startTime"
+                        :results="results"
                         @resetLocation="resetLocation"
                         @calculateDistance="updateScore"
                         @showResult="showResult"
@@ -388,6 +390,39 @@ export default {
                 // Force the players to exit the game when 'Active' is removed
                 // this.exitGame();
             }
+
+            // Show summary button
+                let results = [];
+                
+                snapshot
+                    .child('finalPoints')
+                    .forEach((childSnapshot) => {
+                        const playerName = snapshot
+                            .child('player')
+                            .child(childSnapshot.key)
+                            .val().name;
+                        const finalScore = snapshot
+                            .child('finalScore')
+                            .child(childSnapshot.key)
+                            .val();
+                        const finalPoints = childSnapshot.val();
+                        results.push({
+                            playerId: childSnapshot.key,
+                            playerName: playerName,
+                            finalScore: finalScore,
+                            finalPoints: finalPoints,
+                        });
+                    });
+
+                results = results.sort(
+                    (a, b) =>
+                        parseInt(b.finalPoints) -
+                        parseInt(a.finalPoints)
+                );
+                this.results = results;
+                this.rank = results.findIndex(
+                    (r) => r.playerId === this.playerId
+                ) + 1;
         });
     },
     beforeDestroy() {

@@ -18,24 +18,6 @@ export default new Router({
     mode: 'history',
     routes: [
         {
-            path: '*',
-            redirect: '/',
-        },
-        {
-            path: '/',
-            alias: '/index.html',
-            name: 'home',
-            component: Home,
-        },
-        {
-            path: '/custom',
-            name: 'home custom',
-            component: Home,
-            props: () => ({
-                dialogCustomOpen: true,
-            }),
-        },
-        {
             path: '/game/:partyParams',
             name: 'party',
             component: Home,

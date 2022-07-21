@@ -2,7 +2,12 @@
     <v-card id="card-map">
         <v-card-title>
             <span id="card-title"> {{ $t('CardRoomMap.title') }} </span>
+            
         </v-card-title>
+        <v-card-text>
+        <p>You can choose to play worldwide or pick a city, country or state to play in.</p>
+        <p>Currently selected: <strong>{{selectedPlace || "Worldwide"}}</strong></p>
+        </v-card-text>
 
         <v-card-text>
             <v-row class="search-bar">
@@ -44,7 +49,7 @@
                 }"
             />
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="sticky-footer">
             <v-btn plain v-if="geoJson" @click="reset">{{
                 $t('CardRoomMap.reset')
             }}</v-btn>
@@ -76,6 +81,7 @@ export default {
     data() {
         return {
             place: '',
+            selectedPlace: null,
             entries: [],
             isLoading: false,
             search: '',
@@ -133,6 +139,7 @@ export default {
         }),
         ...mapActions(['loadPlaceGeoJSON', 'setGeoJson']),
         addGeoJson(val) {
+            this.selectedPlace = this.place;
             this.$refs.mapRef.$mapPromise.then((map) => {
                 map.data.setMap(null);
                 let data = new google.maps.Data({
@@ -154,6 +161,7 @@ export default {
         },
         reset() {
             this.place = '';
+            this.selectedPlace = null;
             this.setGeoJson(null);
         },
         next() {
@@ -169,5 +177,9 @@ export default {
     align-items: baseline;
     padding: 0 1rem;
     margin-bottom: 1rem;
+}
+.sticky-footer {
+    position: sticky;
+    bottom: 0;
 }
 </style>

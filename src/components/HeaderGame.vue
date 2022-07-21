@@ -35,6 +35,11 @@
     
                 <span class="main-text">{{ players }}</span>
             </div>
+            <div class="round-points-container">
+                <span class="sub-text">{{ $t('HeaderGame.position') }}: </span>
+    
+                <span class="main-text">{{ position }}</span>
+            </div>
         </div>
     </div>
 </template>
@@ -52,7 +57,8 @@ export default {
         'roomName',
         'nbRound',
         'players',
-        'startTime'
+        'startTime',
+        'position'
     ],
     data() {
         return {

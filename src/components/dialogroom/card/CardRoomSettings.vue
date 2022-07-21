@@ -81,6 +81,7 @@
                         class="card_settings__allow_btns d-flex justify-space-around flex-row"
                     >
                         <div>
+                            <v-card-text>Advanced settings</v-card-text>
                             <v-checkbox
                                 :input-value="gameSettings.zoomControl"
                                 @change="
