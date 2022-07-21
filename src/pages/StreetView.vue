@@ -223,7 +223,7 @@ export default {
             mode: this.modeSelected,
             timeAttack: this.timeAttackSelected,
             nbRound: this.nbRound || this.timeAttackSelected ? 10 : 5,
-            remainingTime: 0,
+            remainingTime: null,
             timerInstance:false,
             endTime: null,
             hasTimerStarted: false,

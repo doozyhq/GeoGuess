@@ -5,10 +5,6 @@
                 <span id="countdown-text">{{ countdownText }}</span>
             </div>
 
-            <div v-else>
-                <span id="countdown-text">{{ timerText }}</span>
-            </div>
-
             <div class="round-score-container">
                 <span class="sub-text">{{ $t('HeaderGame.round') }}: </span>
                 <span id="roundLabel" class="main-text">
