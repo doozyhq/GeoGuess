@@ -793,9 +793,9 @@ export default {
             this.$refs.mapContainer.startNextRound();
         },
 
-        async goToNextRound() {
+        async goToNextRound(roundNumber) {
             if (this.isHost) {
-                await this.room.ref.update({"round": this.round + 1, nbRound: this.round >= this.nbRound ? this.nbRound + 5 : this.nbRound });
+                await this.room.ref.update({"round": roundNumber, nbRound: roundNumber -1 >= this.nbRound ? this.nbRound + 5 : this.nbRound });
             }
         },
         

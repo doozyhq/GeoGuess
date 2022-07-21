@@ -167,6 +167,7 @@
 <script>
 import firebase from 'firebase/app';
 import 'firebase/database';
+import _ from 'lodash';
 
 import DialogSummary from '@/components/DialogSummary';
 import DetailsMap from '@/components/game/DetailsMap';
@@ -267,7 +268,7 @@ export default {
                     const guesses = Object.keys(snapshot.child('guess').val() || {});
                     const allGuessed = hasEveryoneAnswered(guesses, activeUsers);
                     const allAnswered = hasEveryoneAnswered(answeredIds, activeUsers);
-                    
+
                     if (
                         // If Time Attack and 1st true guess finish round
                         (this.timeAttack &&
@@ -514,9 +515,14 @@ export default {
             this.$refs.map.startNextRound();
             this.enableClick = true;
         },
-        goToNextRound(isPlayAgain = false) {
-            this.$emit('goToNextRound', isPlayAgain);
-        },
+  
+        goToNextRound:  _.debounce(function() {
+            this.$emit('goToNextRound', this.round + 1);
+        }, 1000, {
+            leading: true,
+            trailing: false,
+        }),
+  
         finishGame() {
             this.dialogSummary = false;
             if (this.room)

@@ -5,6 +5,11 @@
                 {{ $t('CardRoomPlayerName.title') }}
             </span>
         </v-card-title>
+        <v-card-subtitle>
+            <p>
+                Your aim is to figure out where in Street View you are, as quickly as possible. Put a pin on the the map to guess, the closer you are the more points you get!
+            </p>
+        </v-card-subtitle>
 
         <!-- <v-card-subtitle ref="roomUrl" class="pb-0">
             <span :class="{ blur: streamerMode }">{{ roomUrl }} </span>
@@ -67,7 +72,7 @@
                 color="#43B581"
                 @click="startGame"
             >
-                {{ $t('next') }}
+                {{ $t('start') }}
             </v-btn>
         </v-card-actions>
     </v-card>

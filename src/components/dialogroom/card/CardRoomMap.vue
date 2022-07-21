@@ -4,10 +4,10 @@
             <span id="card-title"> {{ $t('CardRoomMap.title') }} </span>
             
         </v-card-title>
-        <v-card-text>
-        <p>You can choose to play worldwide or pick a city, country or state to play in.</p>
-        <p>Currently selected: <strong>{{selectedPlace || "Worldwide"}}</strong></p>
-        </v-card-text>
+        <v-card-subtitle>
+            <p>You can play worldwide or pick a city, country or state to play within.</p>
+            <p>Currently selected: <strong>{{selectedPlace || "Worldwide"}}</strong></p>
+        </v-card-subtitle>
 
         <v-card-text>
             <v-row class="search-bar">

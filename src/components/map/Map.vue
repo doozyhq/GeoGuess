@@ -163,8 +163,9 @@ export default {
                 }
             }
 
-
-            this.map.fitBounds(bounds);
+            if (this.map) {
+                this.map.fitBounds(bounds);
+            }
         },
         getZoom() {
             if (this.map) {
