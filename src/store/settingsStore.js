@@ -263,7 +263,6 @@ export default {
                 commit(MutationTypes.SETTINGS_SET_BBOX, bboxObj);
 
                 difficulty = getMaxDistanceBbox(bboxObj) / 10;
-                debugger;
             }
             commit(MutationTypes.SETTINGS_SET_DIFFICULTY, difficulty);
             if (!state.room) {

@@ -119,7 +119,6 @@ class StreetViewService {
     }
 
     getRandomLatLng() {
-        debugger;
         if (this.placeGeoJson != null) {
             let position,
                 radius,

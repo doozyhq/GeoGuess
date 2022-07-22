@@ -20,8 +20,6 @@ function getScoreNormal(distance, difficulty) {
             5000 * Math.exp(-(distance / 1000 / difficulty))
         );
 
-        debugger;
-
         if (point > 5000) {
             return 5000;
         } else if (point < 0) {

@@ -382,7 +382,6 @@ export default {
                         .child('timeLimitation')
                         .val();
 
-                    debugger;
                     if (this.timeLimitation) {
                         if (!this.hasTimerStarted) {
                             this.initTimer(this.timeLimitation, this.startTime);
@@ -546,7 +545,6 @@ export default {
             this.panorama.setZoom(0);
         },
         initTimer(time, endDate, printAlert) {
-            debugger;
             endDate.setSeconds(endDate.getSeconds() + time);
             if (printAlert) {
                 this.timeCountdown = time;
