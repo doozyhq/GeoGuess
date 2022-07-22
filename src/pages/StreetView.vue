@@ -103,8 +103,6 @@
 <script>
 import firebase from 'firebase/app';
 import 'firebase/database';
-import Vue from 'vue';
-
 import HeaderGame from '@/components/HeaderGame';
 import Maps from '@/components/Maps';
 import DialogMessage from '@/components/DialogMessage';
