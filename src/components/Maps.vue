@@ -508,6 +508,7 @@ export default {
             this.printMapFull = false;
             this.$refs.map.removeMarkers();
             this.$refs.map.removePolylines();
+            this.$refs.map.centerOnBbox();
 
             if (this.$refs.map.setZoom) {
                 this.$refs.map.setZoom(2);

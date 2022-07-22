@@ -122,6 +122,7 @@ import {
 
 import { AREA_MODE, GAME_MODE, SCORE_MODE } from '../constants';
 import { mapActions, mapGetters } from 'vuex';
+import StreetViewService from '@/plugins/StreetViewService';
 
 export default {
     components: {
@@ -210,8 +211,6 @@ export default {
             area: null,
             results: [],
             randomLatLng: null,
-            randomLat: null,
-            randomLng: null,
             randomFeatureProperties: null,
             score: 0,
             scoreHeader: 0,
@@ -250,7 +249,8 @@ export default {
             bbox: this.bboxObj,
             isVisibleCountdownAlert: false,
             timeCountdown: 0,
-            isLoading: true
+            isLoading: true,
+            streetViewService: null,
         };
     },
     computed: {
@@ -269,6 +269,16 @@ export default {
         this.panorama = new google.maps.StreetViewPanorama(
             this.$refs.streetView
         );
+
+        if (!this.streetViewService) {
+            debugger;
+            this.streetViewService = new StreetViewService(
+                { allPanorama: this.allPanorama, optimiseStreetView: this.optimiseStreetView },
+                { mode: this.mode, areaParams: this.areaParams, areasJson: this.areasJson },
+                this.placeGeoJson,
+                this.roundsPredefined
+            );
+        }
 
         this.room = firebase.database().ref(`rooms/${this.roomName}`);
         this.room.child('active').set(true);
@@ -326,6 +336,7 @@ export default {
                         .child(this.playerId)
                         .set(0);
                 }
+                
                 if (snapshot.child('startTime').exists()) {
                     this.startTime = new Date(snapshot.child('startTime').val());
                 }
@@ -377,9 +388,10 @@ export default {
                         .child('timeLimitation')
                         .val();
 
+                    debugger;
                     if (this.timeLimitation) {
                         if (!this.hasTimerStarted) {
-                            this.initTimer(this.timeLimitation,this.startTime);
+                            this.initTimer(this.timeLimitation, this.startTime);
                             this.hasTimerStarted = true;
                         }
                     }
@@ -395,37 +407,37 @@ export default {
             }
 
             // Show summary button
-                let results = [];
-                
-                snapshot
-                    .child('finalPoints')
-                    .forEach((childSnapshot) => {
-                        const playerName = snapshot
-                            .child('player')
-                            .child(childSnapshot.key)
-                            .val().name;
-                        const finalScore = snapshot
-                            .child('finalScore')
-                            .child(childSnapshot.key)
-                            .val();
-                        const finalPoints = childSnapshot.val();
-                        results.push({
-                            playerId: childSnapshot.key,
-                            playerName: playerName,
-                            finalScore: finalScore,
-                            finalPoints: finalPoints,
-                        });
+            let results = [];
+            
+            snapshot
+                .child('finalPoints')
+                .forEach((childSnapshot) => {
+                    const playerName = snapshot
+                        .child('player')
+                        .child(childSnapshot.key)
+                        .val().name;
+                    const finalScore = snapshot
+                        .child('finalScore')
+                        .child(childSnapshot.key)
+                        .val();
+                    const finalPoints = childSnapshot.val();
+                    results.push({
+                        playerId: childSnapshot.key,
+                        playerName: playerName,
+                        finalScore: finalScore,
+                        finalPoints: finalPoints,
                     });
+                });
 
-                results = results.sort(
-                    (a, b) =>
-                        parseInt(b.finalPoints) -
-                        parseInt(a.finalPoints)
-                );
-                this.results = results;
-                this.rank = results.findIndex(
-                    (r) => r.playerId === this.playerId
-                ) + 1;
+            results = results.sort(
+                (a, b) =>
+                    parseInt(b.finalPoints) -
+                    parseInt(a.finalPoints)
+            );
+            this.results = results;
+            this.rank = results.findIndex(
+                (r) => r.playerId === this.playerId
+            ) + 1;
         });
     },
     beforeDestroy() {
@@ -450,169 +462,25 @@ export default {
     },
     methods: {
         ...mapActions(['loadAreas']),
-        loadStreetView() {
-            const service = new google.maps.StreetViewService();
-            let radius, position;
-            if (this.roundsPredefined) {
-                radius = 50;
-                const positions = this.roundsPredefined[this.round - 1];
-                position = new google.maps.LatLng(positions[0], positions[1]);
-            } else {
-                const randomPos = this.getRandomLatLng();
-                radius = randomPos.radius;
-                position = randomPos.position;
-                this.randomFeatureProperties = randomPos.properties;
-            }
+        async loadStreetView() {
+            let {panorama, roundInfo, warning, area} = await this.streetViewService.getStreetView(this.round);
+            this.randomLatLng = panorama.location.latLng;
+            this.randomFeatureProperties = roundInfo;
+            this.area = area;
+            this.setPosition(panorama);
 
-            service.getPanorama(
-                {
-                    location: position,
-                    preference: 'nearest',
-                    radius,
-                    source: this.allPanorama ? 'default' : 'outdoor',
-                },
-                this.checkStreetView
-            );
-        },
-        getRandomLatLng() {
-            if (this.placeGeoJson != null) {
-                let position,
-                    radius,
-                    properties = null;
-                if (this.placeGeoJson.type === 'FeatureCollection') {
-                    let randInt = Math.floor(
-                        Math.random() * this.placeGeoJson.features.length
-                    );
+            // Put the streetview's location into firebasest
+            this.room.child('startTime').set(Date.now());
+            this.room
+                .child('streetView/round' + this.round)
+                .set({
+                    latitude: this.randomLatLng.lat(),
+                    longitude: this.randomLatLng.lng(),
+                    roundInfo: roundInfo,
+                    ...(area && {area}),
+                    warning,
+                });
 
-                    const feature = this.placeGeoJson.features[randInt];
-                    properties = feature.properties;
-                    if (feature.geometry.type === 'Point') {
-                        position = feature.geometry.coordinates;
-                        radius = 50;
-                    } else {
-                        radius = getMaxDistanceBbox(bbox(feature)) * 100;
-                        position = randomPositionInPolygon(feature);
-                    }
-                } else {
-                    radius = getMaxDistanceBbox(bbox(this.placeGeoJson)) * 100;
-                    position = randomPositionInPolygon(this.placeGeoJson);
-                }
-
-                return {
-                    radius,
-                    position: new google.maps.LatLng(position[1], position[0]),
-                    properties,
-                };
-            }
-
-            // Generate a random latitude and longitude
-            let lat = Math.random() * 170 - 85;
-            let lng = Math.random() * 360 - 180;
-
-            return {
-                radius: 100000,
-                position: new google.maps.LatLng(lat, lng),
-                properties: null,
-            };
-        },
-        async checkStreetView(data, status) {
-            // Generate random streetview until the valid one is generated
-            if (status === 'OK' && data && data.location) {
-                let isInGeoJSONResult;
-                if (this.placeGeoJson != null) {
-                    isInGeoJSONResult = isInGeoJSON(
-                        turfModel.point([
-                            data.location.latLng.lng(),
-                            data.location.latLng.lat(),
-                        ]),
-                        this.placeGeoJson
-                    );
-                }
-                if (
-                    this.placeGeoJson != null &&
-                    this.cptNotFoundLocation < 3 &&
-                    !isInGeoJSONResult
-                ) {
-                    this.loadStreetView();
-                    this.cptNotFoundLocation++;
-                } else {
-                    // If 3 times Street View does not find location in the polygon placeGeoJson print warning message
-                    if (this.placeGeoJson != null && !isInGeoJSONResult) {
-                        this.isVisibleDialog = true;
-                    }
-                    // Save the location's latitude and longitude
-                    this.randomLatLng = data.location.latLng;
-                    this.cptNotFoundLocation = 0;
-                    this.setPosition(data);
-
-                    if (
-                        [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
-                            this.mode
-                        )
-                    ) {
-                        let areaCode;
-                        if (
-                            this.mode === GAME_MODE.COUNTRY ||
-                            (this.areaParams &&
-                                this.areaParams.data.type ===
-                                    AREA_MODE.NOMINATIM)
-                        ) {
-                            areaCode = await getAreaCodeNameFromLatLng(
-                                this.randomLatLng,
-                                this.loadStreetView,
-                                this.areaParams && this.areaParams.data
-                            );
-                        } else {
-                            const area = this.areasJson.features.find((f) =>
-                                booleanPointInPolygon(
-                                    [
-                                        this.randomLatLng.lng(),
-                                        this.randomLatLng.lat(),
-                                    ],
-                                    f
-                                )
-                            );
-
-                            if (!area) {
-                                this.loadStreetView();
-                                return;
-                            } else {
-                                const key = this.areaParams
-                                    ? this.areaParams.data.pathKey
-                                    : 'iso_a2';
-                                areaCode = area.properties[key];
-                            }
-                        }
-                        this.area = areaCode;
-
-                        // Put the streetview's location into firebase
-                        this.room.child('startTime').set(Date.now());
-                        this.room
-                            .child('streetView/round' + this.round)
-                            .set({
-                                latitude: this.randomLatLng.lat(),
-                                longitude: this.randomLatLng.lng(),
-                                roundInfo:
-                                    this.randomFeatureProperties || null,
-                                area: areaCode,
-                                warning: this.isVisibleDialog,
-                            });
-                    } else {
-                        this.room.child('startTime').set(Date.now());
-                        this.room
-                            .child('streetView/round' + this.round)
-                            .set({
-                                latitude: this.randomLatLng.lat(),
-                                longitude: this.randomLatLng.lng(),
-                                roundInfo:
-                                    this.randomFeatureProperties || null,
-                                warning: this.isVisibleDialog,
-                            });
-                    }
-                }
-            } else {
-                this.loadStreetView();
-            }
         },
         resetLocation() {
             const service = new google.maps.StreetViewService();
@@ -645,7 +513,7 @@ export default {
                 document
                     .querySelector('#street-view a[href^="https://maps"]')
                     .remove();
-            Vue.nextTick(() => {
+            setTimeout(() => {
                 if (document.querySelector('.widget-scene')) {
                     document
                         .querySelector('.widget-scene')
@@ -653,7 +521,6 @@ export default {
                             'keydown',
                             this.onUserEventPanoramaKey
                         );
-
                     document
                         .querySelector('.widget-scene')
                         .addEventListener(
@@ -673,19 +540,17 @@ export default {
                             this.onUserEventPanoramaMouse
                         );
                 }
-            });
-
-            if(data && data.location) {
+            }, 50);
+            if(data && data.location)
                 this.panorama.setPano(data.location.pano);
-            }
             this.panorama.setPov({
                 heading: 270,
                 pitch: 0,
             });
-
             this.panorama.setZoom(0);
         },
         initTimer(time, endDate, printAlert) {
+            debugger;
             endDate.setSeconds(endDate.getSeconds() + time);
             if (printAlert) {
                 this.timeCountdown = time;
@@ -732,7 +597,7 @@ export default {
                             } else {
                                 // Set a random location if the player didn't select a location in time
                                 this.$refs.mapContainer.selectRandomLocation(
-                                    this.getRandomLatLng().position
+                                    this.streetViewService.getRandomLatLng().position
                                 );
                             }
                         }
