@@ -1,5 +1,4 @@
 import axios from '@/plugins/axios';
-import 'firebase/analytics';
 import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/auth';
@@ -79,12 +78,10 @@ const firebaseConfig = {
         process.env.VUE_APP_FIREBASE_PROJECT_ID + '.appspot.com',
     messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.VUE_APP_FIREBASE_APP_ID,
-    measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-if (firebaseConfig.measurementId) firebase.analytics();
 
 new Vue({
     vuetify,
