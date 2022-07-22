@@ -109,18 +109,11 @@ import HeaderGame from '@/components/HeaderGame';
 import Maps from '@/components/Maps';
 import DialogMessage from '@/components/DialogMessage';
 
-import randomPositionInPolygon from 'random-position-in-polygon';
-import * as turfModel from '@turf/helpers';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import bbox from '@turf/bbox';
 import {
-    isInGeoJSON,
-    getAreaCodeNameFromLatLng,
     getRandomArea,
-    getMaxDistanceBbox,
 } from '../utils';
 
-import { AREA_MODE, GAME_MODE, SCORE_MODE } from '../constants';
+import {  GAME_MODE, SCORE_MODE } from '../constants';
 import { mapActions, mapGetters } from 'vuex';
 import StreetViewService from '@/plugins/StreetViewService';
 
@@ -270,16 +263,6 @@ export default {
             this.$refs.streetView
         );
 
-        if (!this.streetViewService) {
-            debugger;
-            this.streetViewService = new StreetViewService(
-                { allPanorama: this.allPanorama, optimiseStreetView: this.optimiseStreetView },
-                { mode: this.mode, areaParams: this.areaParams, areasJson: this.areasJson },
-                this.placeGeoJson,
-                this.roundsPredefined
-            );
-        }
-
         this.room = firebase.database().ref(`rooms/${this.roomName}`);
         this.room.child('active').set(true);
         this.room.on('value', async (snapshot) => {
@@ -299,6 +282,17 @@ export default {
 
             if (!this.placeGeoJson && snapshot.child("placeGeoJson").exists()) {
                 this.placeGeoJson = JSON.parse(snapshot.child("placeGeoJson").val());
+            }
+
+            this.difficultyData = snapshot.child('difficulty').val() || this.difficultyData;
+
+            if (!this.streetViewService) {
+                this.streetViewService = new StreetViewService(
+                    { allPanorama: this.allPanorama, optimiseStreetView: this.optimiseStreetView },
+                    { mode: this.mode, areaParams: this.areaParams, areasJson: this.areasJson },
+                    this.placeGeoJson,
+                    this.roundsPredefined
+                );
             }
 
             if (!this.bboxObj && !snapshot.child("bboxObj").exists()) {
@@ -398,9 +392,11 @@ export default {
                     this.resetLocation();
                 }
 
+
                 if (this.isHost && !snapshot.child("streetView").child('round' + this.round).exists() && isNewRound) {
                     this.loadStreetView();
                 } 
+                
             } else {
                 // Force the players to exit the game when 'Active' is removed
                 // this.exitGame();

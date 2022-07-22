@@ -292,8 +292,10 @@ export default {
                         let players = {};
                         
                         this.enableClick = false;
-                        this.$refs.map.removeMarkers();
-                        this.$refs.map.removePolylines();
+                        if (this.$refs.map){
+                            this.$refs.map.removeMarkers();
+                            this.$refs.map.removePolylines();
+                        }
 
                         if (snapshot.child(`round${this.round}`).numChildren() > 0) {
                             snapshot.child(`round${this.round}`).forEach((childSnapshot) => {
