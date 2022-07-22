@@ -216,6 +216,7 @@ export default {
             score: 0,
             scoreHeader: 0,
             points: 0,
+            rank: 0,
             pointsHeader: 0,
             round: 0,
             streetView: 0,
