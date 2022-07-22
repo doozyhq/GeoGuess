@@ -226,7 +226,7 @@
                 </v-col>
             </v-row>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions  class="sticky-footer">
             <div class="flex-grow-1" />
             <!-- <v-btn dark depressed color="error" @click="cancel">
                 {{ $t('cancel') }}
@@ -330,6 +330,10 @@ export default {
         }
     }
 
+    .sticky-footer {
+        position: sticky;
+        bottom: 0;
+    }
     .card_settings__allow_btns {
         display: flex;
         flex-direction: column;

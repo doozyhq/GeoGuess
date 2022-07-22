@@ -59,7 +59,7 @@
                 </div>
             </v-container>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="sticky-footer">
             <div class="flex-grow-1" />
             <!-- <v-btn v-if="isHost" dark depressed color="error" @click="cancel">
                 {{ $t('cancel') }}
@@ -108,21 +108,25 @@ export default {
 </script>
 
 <style scoped>
-#card-title {
-    font-size: 16px;
-    font-weight: 500;
-    opacity: 0.9;
+    #card-title {
+        font-size: 16px;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+    h3 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+    .players-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 8.75rem);
+        column-gap: 1.875rem;
+        row-gap: 1.5rem;
+        justify-content: center;
 }
-h3 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    font-weight: 500;
-}
-.players-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 8.75rem);
-    column-gap: 1.875rem;
-    row-gap: 1.5rem;
-    justify-content: center;
-}
+    .sticky-footer {
+        position: sticky;
+        bottom: 0;
+    }
 </style>
