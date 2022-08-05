@@ -266,7 +266,7 @@ export default {
             }
             commit(MutationTypes.SETTINGS_SET_DIFFICULTY, difficulty);
             if (!state.room) {
-                router.push({
+                router.replace({
                     name: 'street-view',
                     params: {
                         ...state.gameSettings,
@@ -356,7 +356,7 @@ export default {
         },
         startGameMultiplayer({ state, dispatch }, gameParams) {
             // Start the game
-            router.push({
+            router.replace({
                 name: 'with-friends',
                 params: {
                     ...gameParams,
