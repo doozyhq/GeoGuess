@@ -263,13 +263,39 @@ export default {
 
         this.room = firebase.database().ref(`rooms/${this.roomName}`);
         this.room.child('active').set(true);
+        const hostCheck = async (snapshot) => {
+            const hostId = snapshot.child('host').val();
+            const isHost = hostId === this.playerId;
+
+            if (this.isHost !== isHost) {
+                this.isHost = isHost;
+            }
+
+            const isHostOffline =
+                snapshot.child('player').child(hostId).val().isOnline ===
+                false;
+
+            if (isHostOffline) {
+                const players = snapshot.child('player').val();
+                const newHost = Object.entries(players).find(
+                    ([id, player]) => player.isOnline
+                );
+
+                if (newHost && newHost[0] === this.playerId) {
+                    snapshot.ref.update({
+                        host: newHost[0],
+                    });
+                }
+            }
+        };
+
         this.room.on('value', async (snapshot) => {
             this.playerId = firebase.auth().currentUser && firebase.auth().currentUser.uid || null;
+            this.isHost = snapshot.child('host').val() === this.playerId;
+            hostCheck(snapshot);
 
             if (this.playerId && snapshot.child('player').child(this.playerId).exists()) {
-                this.isHost = snapshot.child('player').child(this.playerId).val().isHost || false;
                 this.playerName = snapshot.child('player').child(this.playerId).val().name || false;
-
                 snapshot.ref.child('player').child(this.playerId).child('isOnline').onDisconnect().set(false).then(() => {
                     snapshot.ref.child('player').child(this.playerId).child('isOnline').set(true);
                 });

@@ -56,7 +56,7 @@ export default {
 
         ...mapActions(['loadPlaceGeoJSON']),
         cancel() {
-            this.closeDialogRoom();
+            // this.closeDialogRoom();
         },
     },
 };

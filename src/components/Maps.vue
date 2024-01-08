@@ -226,7 +226,7 @@ export default {
             activeMap: false,
             size: 2,
             isNotepadVisible: false,
-            pinActive: false,
+            pinActive: localStorage.getItem('pinActive') === 'true',
             printMapFull: false,
             countdownStarted: false,
             game: {

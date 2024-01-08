@@ -71,7 +71,36 @@ export default {
                 state.isOpenDialogRoom = true;
             }
 
-            state.room.once('value', (snapshot) => {
+            const hostCheck = async (snapshot) => {
+                const hostId = snapshot.child('host').val();
+                const isHost = hostId === state.playerId;
+
+                if (this.isHost !== isHost) {
+                    this.isHost = isHost;
+                }
+
+                const isHostOffline =
+                    state.room.child('player').child(hostId).val().isOnline ===
+                    false;
+
+                if (isHostOffline) {
+                    const players = state.room.child('player').val();
+                    const newHost = Object.entries(players).find(
+                        ([id, player]) => player.isOnline
+                    );
+
+                    if (newHost && newHost[0] === state.playerId) {
+                        state.room.update({
+                            host: newHost[0],
+                        });
+                    }
+                }
+            };
+
+            // Watch the host
+            state.room.on('value', hostCheck);
+
+            state.room.once('value', async (snapshot) => {
                 const playerId = (state.playerId =
                     firebase.auth().currentUser.uid);
 
@@ -81,18 +110,20 @@ export default {
                     !qp.get('is_host') || qp.get('is_host') === 'true';
 
                 const ref = snapshot.ref;
+                const isThereAHost = snapshot.child('host').exists();
 
-                const isThereAHost = (
-                    Object.values(snapshot.child('player').val() || {}) || []
-                ).find((p) => p.isHost);
-
+                await hostCheck(snapshot);
                 if (!isThereAHost && allowHost) {
+                    await ref.child('host').set(playerId);
+                    this.isHost = true;
+                }
+
+                if (this.isHost) {
                     // Put the tentative player's name into the room node
                     // So that other player can't enter as the first player while the player decide the name and room size
                     ref.child('player').update(
                         {
                             [`${playerId}/name`]: name,
-                            [`${playerId}/isHost`]: true,
                             [`${playerId}/isOnline`]: true,
                         },
                         (error) => {
