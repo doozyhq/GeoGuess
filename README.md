@@ -1,11 +1,11 @@
-![logo](../master/public/img/icons/android-icon-36x36.png) Geoguess
-===
+# ![logo](../master/public/img/icons/android-icon-36x36.png) Geoguess
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/GeoGuess/GeoGuess)](https://github.com/GeoGuess/Geoguess/releases) 
-[![GitHub](https://img.shields.io/github/license/BilelJegham/Geoguess-2)](https://github.com/GeoGuess/Geoguess/blob/master/LICENSE) 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/GeoGuess/GeoGuess)](https://github.com/GeoGuess/Geoguess/releases)
+[![GitHub](https://img.shields.io/github/license/BilelJegham/Geoguess-2)](https://github.com/GeoGuess/Geoguess/blob/master/LICENSE)
 [![Discord](https://img.shields.io/discord/758443244387303435?color=7289DA&label=discord&logo=discord&logoColor=FFFFFF)](https://discord.gg/9GXm6RT)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-18-orange.svg)](#-contribution)
-<!-- ALL-CONTRIBUTORS-BADGE:END --> 
+
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ![CI](https://github.com/GeoGuess/Geoguess/workflows/CI/badge.svg)
 [![DeepScan grade](https://deepscan.io/api/teams/6533/projects/15869/branches/324468/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=6533&pid=15869&bid=324468)
@@ -23,12 +23,13 @@ This game was forked from [GeoGuess Master Web](https://github.com/spider-hand/G
 ## Table of contents
 
 <!-- TOC -->
-  - [🃏 Features](#-features)
-  - [🚀 Deploy](#-deploy)
-  - [📝 Changelog](#-changelog)
-  - [👏 Contribution](#-contribution)
-  - [📜 License](#-license)
-  - [📞 Contact](#-contact)
+
+-   [🃏 Features](#-features)
+-   [🚀 Deploy](#-deploy)
+-   [📝 Changelog](#-changelog)
+-   [👏 Contribution](#-contribution)
+-   [📜 License](#-license)
+-   [📞 Contact](#-contact)
 <!-- /TOC -->
 
 ## 🃏 Features
@@ -90,7 +91,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
-
 ## 📜 License
 
 Licensed under [MIT License](https://github.com/GeoGuess/Geoguess/blob/master/LICENSE)
@@ -100,3 +100,5 @@ Licensed under [MIT License](https://github.com/GeoGuess/Geoguess/blob/master/LI
 Feel free to give us feedback.  
 [Issues](https://github.com/GeoGuess/Geoguess/issues) or
 [Discord](https://discord.gg/9GXm6RT)
+
+trigger
