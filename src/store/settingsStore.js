@@ -79,12 +79,15 @@ export default {
                     this.isHost = isHost;
                 }
 
+                const hostPlayer = hostId
+                    ? snapshot.child('player').child(hostId).val()
+                    : null;
+
                 const isHostOffline =
-                    state.room.child('player').child(hostId).val().isOnline ===
-                    false;
+                    hostPlayer && hostPlayer.isOnline === false;
 
                 if (isHostOffline) {
-                    const players = state.room.child('player').val();
+                    const players = snapshot.child('player').val();
                     const newHost = Object.entries(players).find(
                         ([, player]) => player.isOnline
                     );
