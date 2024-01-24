@@ -86,7 +86,7 @@ export default {
                 if (isHostOffline) {
                     const players = state.room.child('player').val();
                     const newHost = Object.entries(players).find(
-                        ([id, player]) => player.isOnline
+                        ([, player]) => player.isOnline
                     );
 
                     if (newHost && newHost[0] === state.playerId) {
