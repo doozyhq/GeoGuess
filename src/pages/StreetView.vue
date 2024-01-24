@@ -19,14 +19,18 @@
                 <v-overlay :value="!isReady && multiplayer" opacity="1" />
                 <div id="street-view" ref="streetView" />
 
-
                 <div id="game-interface__overlay">
                     <v-tooltip top>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn class="resetBtn" rounded dark fab 
-                                   v-bind="attrs"
-                                   v-on="on"
-                                   @click="resetLocation" >
+                            <v-btn
+                                class="resetBtn"
+                                rounded
+                                dark
+                                fab
+                                v-bind="attrs"
+                                v-on="on"
+                                @click="resetLocation"
+                            >
                                 <v-icon>mdi-crosshairs-gps</v-icon>
                             </v-btn>
                         </template>
@@ -107,11 +111,9 @@ import HeaderGame from '@/components/HeaderGame';
 import Maps from '@/components/Maps';
 import DialogMessage from '@/components/DialogMessage';
 
-import {
-    getRandomArea,
-} from '../utils';
+import { getRandomArea } from '../utils';
 
-import {  GAME_MODE, SCORE_MODE } from '../constants';
+import { GAME_MODE, SCORE_MODE } from '../constants';
 import { mapActions, mapGetters } from 'vuex';
 import StreetViewService from '@/plugins/StreetViewService';
 
@@ -191,11 +193,11 @@ export default {
         areaParams: {
             type: Object,
         },
-        mapDetails:{
+        mapDetails: {
             type: Object,
             required: false,
-            default: undefined
-        }
+            default: undefined,
+        },
     },
     data() {
         return {
@@ -215,7 +217,7 @@ export default {
             timeAttack: this.timeAttackSelected,
             nbRound: this.nbRound || this.timeAttackSelected ? 10 : 5,
             remainingTime: null,
-            timerInstance:false,
+            timerInstance: false,
             endTime: null,
             hasTimerStarted: false,
             hasLocationSelected: false,
@@ -231,7 +233,7 @@ export default {
             players: 0,
             playerId: null,
             isHost: false,
-            playerName: "",
+            playerName: '',
             startTime: null,
             placeGeoJson: null,
             bboxObj: null,
@@ -272,13 +274,12 @@ export default {
             }
 
             const isHostOffline =
-                snapshot.child('player').child(hostId).val().isOnline ===
-                false;
+                snapshot.child('player').child(hostId).val().isOnline === false;
 
             if (isHostOffline) {
                 const players = snapshot.child('player').val();
                 const newHost = Object.entries(players).find(
-                    ([id, player]) => player.isOnline
+                    ([, player]) => player.isOnline
                 );
 
                 if (newHost && newHost[0] === this.playerId) {
@@ -290,59 +291,88 @@ export default {
         };
 
         this.room.on('value', async (snapshot) => {
-            this.playerId = firebase.auth().currentUser && firebase.auth().currentUser.uid || null;
+            this.playerId =
+                (firebase.auth().currentUser &&
+                    firebase.auth().currentUser.uid) ||
+                null;
             this.isHost = snapshot.child('host').val() === this.playerId;
             hostCheck(snapshot);
 
-            if (this.playerId && snapshot.child('player').child(this.playerId).exists()) {
-                this.playerName = snapshot.child('player').child(this.playerId).val().name || false;
-                snapshot.ref.child('player').child(this.playerId).child('isOnline').onDisconnect().set(false).then(() => {
-                    snapshot.ref.child('player').child(this.playerId).child('isOnline').set(true);
-                });
+            if (
+                this.playerId &&
+                snapshot.child('player').child(this.playerId).exists()
+            ) {
+                this.playerName =
+                    snapshot.child('player').child(this.playerId).val().name ||
+                    false;
+                snapshot.ref
+                    .child('player')
+                    .child(this.playerId)
+                    .child('isOnline')
+                    .onDisconnect()
+                    .set(false)
+                    .then(() => {
+                        snapshot.ref
+                            .child('player')
+                            .child(this.playerId)
+                            .child('isOnline')
+                            .set(true);
+                    });
             } else {
                 this.isHost = false;
                 this.playerName = null;
             }
 
-            if (!this.placeGeoJson && snapshot.child("placeGeoJson").exists()) {
-                this.placeGeoJson = JSON.parse(snapshot.child("placeGeoJson").val());
+            if (!this.placeGeoJson && snapshot.child('placeGeoJson').exists()) {
+                this.placeGeoJson = JSON.parse(
+                    snapshot.child('placeGeoJson').val()
+                );
             }
 
-            this.difficultyData = snapshot.child('difficulty').val() || this.difficultyData;
+            this.difficultyData =
+                snapshot.child('difficulty').val() || this.difficultyData;
 
             if (!this.streetViewService) {
                 this.streetViewService = new StreetViewService(
-                    { allPanorama: this.allPanorama, optimiseStreetView: this.optimiseStreetView },
-                    { mode: this.mode, areaParams: this.areaParams, areasJson: this.areasJson },
+                    {
+                        allPanorama: this.allPanorama,
+                        optimiseStreetView: this.optimiseStreetView,
+                    },
+                    {
+                        mode: this.mode,
+                        areaParams: this.areaParams,
+                        areasJson: this.areasJson,
+                    },
                     this.placeGeoJson,
                     this.roundsPredefined
                 );
             }
 
-            if (!this.bboxObj && !snapshot.child("bboxObj").exists()) {
-                this.bboxObj = JSON.parse(snapshot.child("bboxObj").val());
+            if (!this.bboxObj && !snapshot.child('bboxObj').exists()) {
+                this.bboxObj = JSON.parse(snapshot.child('bboxObj').val());
                 this.bbox = this.bboxObj;
             }
 
-
-            this.isLoading = false; 
-            if (snapshot.child("nbRound").exists()) {
-                this.nbRound = snapshot.child("nbRound").val();
+            this.isLoading = false;
+            if (snapshot.child('nbRound').exists()) {
+                this.nbRound = snapshot.child('nbRound').val();
             }
 
             // Check if the room is already removed
             if (snapshot.hasChild('active')) {
                 let isNewRound = false;
-                if (!snapshot.child("round").exists()) {
-                    this.round = snapshot.child("round").val() || 1;
-                    snapshot.ref.child("round").set(1);
+                if (!snapshot.child('round').exists()) {
+                    this.round = snapshot.child('round').val() || 1;
+                    snapshot.ref.child('round').set(1);
                     isNewRound = true;
                 } else {
-                    isNewRound = this.round !== snapshot.child("round").val();
-                    this.round = snapshot.child("round").val();
+                    isNewRound = this.round !== snapshot.child('round').val();
+                    this.round = snapshot.child('round').val();
                 }
 
-                this.players = Object.values(snapshot.child("player").val()).filter(t => t.isOnline).length;
+                this.players = Object.values(
+                    snapshot.child('player').val()
+                ).filter((t) => t.isOnline).length;
                 // Put the player into the current round node if the player is not put yet
                 if (
                     !snapshot
@@ -354,52 +384,49 @@ export default {
                         .child(this.playerId)
                         .set(0);
                 }
-                
+
                 if (snapshot.child('startTime').exists()) {
-                    this.startTime = new Date(snapshot.child('startTime').val());
+                    this.startTime = new Date(
+                        snapshot.child('startTime').val()
+                    );
                 }
 
                 // Load the streetview when it's ready
-                if (snapshot.child(`streetView/round${this.round}`).exists() && this.round !== this.streetView) {
+                if (
+                    snapshot.child(`streetView/round${this.round}`).exists() &&
+                    this.round !== this.streetView
+                ) {
                     this.startNextRound();
-                    this.hasLocationSelected = snapshot.child(`round${this.round}`).child(this.playerId).exists() && snapshot.child(`round${this.round}`).child(this.playerId).val() !== 0;
+                    this.hasLocationSelected =
+                        snapshot
+                            .child(`round${this.round}`)
+                            .child(this.playerId)
+                            .exists() &&
+                        snapshot
+                            .child(`round${this.round}`)
+                            .child(this.playerId)
+                            .val() !== 0;
 
                     this.randomLat = snapshot
-                        .child(
-                            'streetView/round' +
-                                this.round +
-                                '/latitude'
-                        )
+                        .child('streetView/round' + this.round + '/latitude')
                         .val();
                     this.randomLng = snapshot
-                        .child(
-                            'streetView/round' +
-                                this.round +
-                                '/longitude'
-                        )
+                        .child('streetView/round' + this.round + '/longitude')
                         .val();
                     this.randomLatLng = new google.maps.LatLng(
                         this.randomLat,
                         this.randomLng
                     );
                     this.area = snapshot
-                        .child(
-                            'streetView/round' + this.round + '/area'
-                        )
+                        .child('streetView/round' + this.round + '/area')
                         .val();
                     this.isVisibleDialog = snapshot
-                        .child(
-                            'streetView/round' + this.round + '/warning'
-                        )
+                        .child('streetView/round' + this.round + '/warning')
                         .val();
                     this.randomFeatureProperties = snapshot
-                        .child(
-                            'streetView/round' +
-                                this.round +
-                                '/roundInfo'
-                        )
+                        .child('streetView/round' + this.round + '/roundInfo')
                         .val();
-                        
+
                     this.streetView = this.round;
                     // Countdown timer starts
                     this.timeLimitation = snapshot
@@ -415,11 +442,16 @@ export default {
                     this.resetLocation();
                 }
 
-
-                if (this.isHost && !snapshot.child("streetView").child('round' + this.round).exists() && isNewRound) {
+                if (
+                    this.isHost &&
+                    !snapshot
+                        .child('streetView')
+                        .child('round' + this.round)
+                        .exists() &&
+                    isNewRound
+                ) {
                     this.loadStreetView();
-                } 
-                
+                }
             } else {
                 // Force the players to exit the game when 'Active' is removed
                 // this.exitGame();
@@ -427,36 +459,31 @@ export default {
 
             // Show summary button
             let results = [];
-            
-            snapshot
-                .child('finalPoints')
-                .forEach((childSnapshot) => {
-                    const playerName = snapshot
-                        .child('player')
-                        .child(childSnapshot.key)
-                        .val().name;
-                    const finalScore = snapshot
-                        .child('finalScore')
-                        .child(childSnapshot.key)
-                        .val();
-                    const finalPoints = childSnapshot.val();
-                    results.push({
-                        playerId: childSnapshot.key,
-                        playerName: playerName,
-                        finalScore: finalScore,
-                        finalPoints: finalPoints,
-                    });
+
+            snapshot.child('finalPoints').forEach((childSnapshot) => {
+                const playerName = snapshot
+                    .child('player')
+                    .child(childSnapshot.key)
+                    .val().name;
+                const finalScore = snapshot
+                    .child('finalScore')
+                    .child(childSnapshot.key)
+                    .val();
+                const finalPoints = childSnapshot.val();
+                results.push({
+                    playerId: childSnapshot.key,
+                    playerName: playerName,
+                    finalScore: finalScore,
+                    finalPoints: finalPoints,
                 });
+            });
 
             results = results.sort(
-                (a, b) =>
-                    parseInt(b.finalPoints) -
-                    parseInt(a.finalPoints)
+                (a, b) => parseInt(b.finalPoints) - parseInt(a.finalPoints)
             );
             this.results = results;
-            this.rank = results.findIndex(
-                (r) => r.playerId === this.playerId
-            ) + 1;
+            this.rank =
+                results.findIndex((r) => r.playerId === this.playerId) + 1;
         });
     },
     beforeDestroy() {
@@ -482,7 +509,8 @@ export default {
     methods: {
         ...mapActions(['loadAreas']),
         async loadStreetView() {
-            let {panorama, roundInfo, warning, area} = await this.streetViewService.getStreetView(this.round);
+            let { panorama, roundInfo, warning, area } =
+                await this.streetViewService.getStreetView(this.round);
             this.randomLatLng = panorama.location.latLng;
             this.randomFeatureProperties = roundInfo;
             this.area = area;
@@ -490,16 +518,13 @@ export default {
 
             // Put the streetview's location into firebasest
             this.room.child('startTime').set(Date.now());
-            this.room
-                .child('streetView/round' + this.round)
-                .set({
-                    latitude: this.randomLatLng.lat(),
-                    longitude: this.randomLatLng.lng(),
-                    roundInfo: roundInfo,
-                    ...(area && {area}),
-                    warning,
-                });
-
+            this.room.child('streetView/round' + this.round).set({
+                latitude: this.randomLatLng.lat(),
+                longitude: this.randomLatLng.lng(),
+                roundInfo: roundInfo,
+                ...(area && { area }),
+                warning,
+            });
         },
         resetLocation() {
             const service = new google.maps.StreetViewService();
@@ -560,7 +585,7 @@ export default {
                         );
                 }
             }, 50);
-            if(data && data.location)
+            if (data && data.location)
                 this.panorama.setPano(data.location.pano);
             this.panorama.setPov({
                 heading: 270,
@@ -588,7 +613,7 @@ export default {
                     0,
                     Math.round((this.endTime - Date.now()) / 1000)
                 );
-                
+
                 this.timerInstance = setInterval(() => {
                     if (this.remainingTime > 0) {
                         this.remainingTime = Math.max(
@@ -596,13 +621,14 @@ export default {
                             Math.round((this.endTime - Date.now()) / 1000)
                         );
                     } else {
-                        this.stopTimer(); 
-                        
+                        this.stopTimer();
+
                         if (!this.hasLocationSelected) {
                             if (
-                                [GAME_MODE.COUNTRY, GAME_MODE.CUSTOM_AREA].includes(
-                                    this.mode
-                                )
+                                [
+                                    GAME_MODE.COUNTRY,
+                                    GAME_MODE.CUSTOM_AREA,
+                                ].includes(this.mode)
                             ) {
                                 this.$refs.mapContainer.selectRandomLocation(
                                     getRandomArea(
@@ -615,7 +641,8 @@ export default {
                             } else {
                                 // Set a random location if the player didn't select a location in time
                                 this.$refs.mapContainer.selectRandomLocation(
-                                    this.streetViewService.getRandomLatLng().position
+                                    this.streetViewService.getRandomLatLng()
+                                        .position
                                 );
                             }
                         }
@@ -634,12 +661,8 @@ export default {
             this.score += distance;
             this.points += points;
 
-            this.room
-                .child(`finalScore/${this.playerId}`)
-                .set(this.score);
-            this.room
-                .child(`finalPoints/${this.playerId}`)
-                .set(this.points);
+            this.room.child(`finalScore/${this.playerId}`).set(this.score);
+            this.room.child(`finalPoints/${this.playerId}`).set(this.points);
 
             // Wait for other players to guess locations
             this.dialogTitle = this.$t('StreetView.waitForOtherPlayers');
@@ -679,10 +702,16 @@ export default {
 
         async goToNextRound(roundNumber) {
             if (this.isHost) {
-                await this.room.ref.update({"round": roundNumber, nbRound: roundNumber -1 >= this.nbRound ? this.nbRound + 5 : this.nbRound });
+                await this.room.ref.update({
+                    round: roundNumber,
+                    nbRound:
+                        roundNumber - 1 >= this.nbRound
+                            ? this.nbRound + 5
+                            : this.nbRound,
+                });
             }
         },
-        
+
         exitGame() {
             // Disable the listener and force the players to exit the game
             this.dialogTitle = this.$t('StreetView.redirectToHomePage');
@@ -698,7 +727,6 @@ export default {
             );
             this.dialogText = '';
             this.dialogMessage = true;
-
         },
         onUserEventPanoramaKey(e) {
             if (
@@ -750,7 +778,7 @@ export default {
         top: 0;
         right: 0;
         display: flex;
-        .resetBtn{
+        .resetBtn {
             position: absolute;
             bottom: 22px;
             right: 70px;
