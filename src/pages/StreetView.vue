@@ -274,18 +274,22 @@ export default {
             }
 
             const isHostOffline =
+                !snapshot.child('player').child(hostId).exists() ||
                 snapshot.child('player').child(hostId).val().isOnline === false;
 
             if (isHostOffline) {
                 const players = snapshot.child('player').val();
-                const newHost = Object.entries(players).find(
-                    ([, player]) => player.isOnline
-                );
 
-                if (newHost && newHost[0] === this.playerId) {
-                    snapshot.ref.update({
-                        host: newHost[0],
-                    });
+                if (players) {
+                    const newHost = Object.entries(players).find(
+                        ([, player]) => player.isOnline
+                    );
+
+                    if (newHost && newHost[0] === this.playerId) {
+                        snapshot.ref.update({
+                            host: newHost[0],
+                        });
+                    }
                 }
             }
         };
@@ -371,7 +375,7 @@ export default {
                 }
 
                 this.players = Object.values(
-                    snapshot.child('player').val()
+                    snapshot.child('player').val() || {}
                 ).filter((t) => t.isOnline).length;
                 // Put the player into the current round node if the player is not put yet
                 if (
