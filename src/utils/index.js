@@ -166,7 +166,12 @@ export function getAreaCodeNameFromLatLng(latLng, areaParams) {
         .get(
             `https://nominatim.openstreetmap.org/reverse?lat=${latLng.lat()}&lon=${latLng.lng()}&format=json&${new URLSearchParams(
                 nominatimQueryParams
-            )}`
+            )}`,
+            {
+                headers: {
+                    'User-Agent': 'do-geo-game/1.0',
+                },
+            }
         )
         .then(({ status, data }) => {
             if (status !== 200 || !data || data.error) return null;
