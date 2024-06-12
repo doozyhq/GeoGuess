@@ -164,7 +164,7 @@ export function getAreaCodeNameFromLatLng(latLng, areaParams) {
 
     return axios
         .get(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latLng.lat()}&lon=${latLng.lng()}&format=json&${new URLSearchParams(
+            `/api/openstreetmap/reverse?lat=${latLng.lat()}&lon=${latLng.lng()}&format=json&${new URLSearchParams(
                 nominatimQueryParams
             )}`,
             {
