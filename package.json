@@ -3,8 +3,8 @@
     "version": "0.7.2",
     "description": "GeoGuess is an open-source geography game with Google Map StreetView.",
     "scripts": {
-        "serve": "vue-cli-service serve",
-        "build": "vue-cli-service build",
+        "serve": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve",
+        "build": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build",
         "test": "npm run lint && npm run test:unit && npm run test:e2e",
         "test:unit": "cross-env NODE_OPTIONS=--unhandled-rejections=warn  vue-cli-service test:unit",
         "test:e2e": "cypress run",

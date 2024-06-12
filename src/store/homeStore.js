@@ -165,13 +165,17 @@ export default {
 
                 commit(MutationTypes.HOME_SET_GEOJSON, null);
                 const url = osmId
-                    ? `https://nominatim.openstreetmap.org/lookup?osm_ids=R${osmId}&format=geojson&polygon_geojson=1&accept-language=en`
-                    : `https://nominatim.openstreetmap.org/search/${encodeURIComponent(
+                    ? `/api/openstreetmap/lookup?osmId=${osmId}`
+                    : `/api/openstreetmap/search?place=${encodeURIComponent(
                           place.toLowerCase()
-                      )}?format=geojson&limit=5&polygon_geojson=1`;
+                      )}`;
                 // TODO : add &accept-language=en
                 return axios
-                    .get(url)
+                    .get(url, {
+                        headers: {
+                            'User-Agent': 'do-geo-game/1.0',
+                        },
+                    })
                     .then((res) => {
                         if (
                             res &&
