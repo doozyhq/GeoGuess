@@ -465,15 +465,25 @@ export default {
             let results = [];
 
             snapshot.child('finalPoints').forEach((childSnapshot) => {
+                const isPlayerAvailable = snapshot
+                    .child('player')
+                    .child(childSnapshot.key)
+                    .exists();
+
+                if (!isPlayerAvailable) {
+                    return;
+                }
+
                 const playerName = snapshot
                     .child('player')
                     .child(childSnapshot.key)
                     .val().name;
-                const finalScore = snapshot
-                    .child('finalScore')
-                    .child(childSnapshot.key)
-                    .val();
-                const finalPoints = childSnapshot.val();
+                const finalScore =
+                    snapshot
+                        .child('finalScore')
+                        .child(childSnapshot.key)
+                        .val() || 0;
+                const finalPoints = childSnapshot.val() || 0;
                 results.push({
                     playerId: childSnapshot.key,
                     playerName: playerName,
