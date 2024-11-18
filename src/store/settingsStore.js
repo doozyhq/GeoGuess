@@ -92,7 +92,11 @@ export default {
                         ([, player]) => player.isOnline
                     );
 
-                    if (newHost && newHost[0] === state.playerId) {
+                    if (
+                        newHost &&
+                        newHost[0] === state.playerId &&
+                        state.room
+                    ) {
                         state.room.update({
                             host: newHost[0],
                         });
@@ -235,7 +239,6 @@ export default {
             state.players = players;
         },
         [MutationTypes.SETTINGS_RESET](state) {
-            state.room = null;
             state.roomName = '';
             state.playerNumber = 0;
             state.roomErrorMessage = null;
@@ -313,7 +316,7 @@ export default {
                     },
                 });
                 dispatch('closeDialogRoom');
-            } else {
+            } else if (state.room) {
                 state.room.update(
                     {
                         ...state.gameSettings,
@@ -355,17 +358,20 @@ export default {
                     difficulty: state.difficulty,
                     isHost: true,
                 };
-                // Set flag started
-                state.room.update({
-                    size: state.players.length,
-                    started: true,
-                    difficulty: state.difficulty,
-                    placeGeoJson: JSON.stringify(
-                        rootState.homeStore.map.geojson
-                    ),
-                    bboxObj: JSON.stringify(state.bboxObj || null),
-                });
-                dispatch('startGameMultiplayer', gameParams);
+
+                if (state.room) {
+                    // Set flag started
+                    state.room.update({
+                        size: state.players.length,
+                        started: true,
+                        difficulty: state.difficulty,
+                        placeGeoJson: JSON.stringify(
+                            rootState.homeStore.map.geojson
+                        ),
+                        bboxObj: JSON.stringify(state.bboxObj || null),
+                    });
+                    dispatch('startGameMultiplayer', gameParams);
+                }
             } else {
                 state.room.once('value', (snapshot) => {
                     gameParams = {
